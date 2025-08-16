@@ -33,7 +33,7 @@ export function ViewModeSelector({ viewMode, onViewModeChange }) {
   ];
 
   return (
-    <div className="flex bg-background-elevated/50 backdrop-blur-sm rounded-xl p-1 border border-white/10">
+    <div className="flex bg-white/10 backdrop-blur-md rounded-full p-1.5 border-2 border-white/20">
       {modes.map((mode) => {
         const Icon = mode.icon;
         return (
@@ -41,28 +41,34 @@ export function ViewModeSelector({ viewMode, onViewModeChange }) {
             key={mode.value}
             onClick={() => onViewModeChange(mode.value)}
             className={`
-              group relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105
+              group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5
               ${
                 viewMode === mode.value
-                  ? `bg-gradient-to-r ${mode.gradient} text-white shadow-lg scale-105`
-                  : "text-foreground-secondary hover:text-foreground-primary hover:bg-white/5"
+                  ? `bg-gradient-to-r ${mode.gradient} text-white shadow-2xl scale-105 border-2 border-white/20`
+                  : "text-white hover:text-white hover:bg-white/20"
               }
             `}
           >
             {/* Background glow for selected */}
             {viewMode === mode.value && (
-              <div className={`absolute -inset-1 bg-gradient-to-r ${mode.gradient} rounded-lg blur-xl opacity-50`}></div>
+              <div className={`absolute -inset-1 bg-gradient-to-r ${mode.gradient} rounded-full blur-xl opacity-60 animate-pulse`}></div>
             )}
 
             <div className="relative flex items-center gap-2">
-              <Icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{mode.label}</span>
+              <div className={`p-1 rounded-full ${
+                viewMode === mode.value
+                  ? "bg-white/20 backdrop-blur-sm"
+                  : "bg-white/10 group-hover:bg-white/20"
+              }`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <span className="hidden sm:inline font-medium">{mode.label}</span>
             </div>
 
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-background-elevated/95 backdrop-blur-xl border border-white/10 rounded-lg text-xs text-foreground-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            {/* Enhanced Tooltip */}
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-2 bg-black/80 backdrop-blur-xl border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
               {mode.description}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-background-elevated/95"></div>
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80"></div>
             </div>
           </button>
         );
