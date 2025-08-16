@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Header } from "../../components/ui/user/Header";
+import Header from "../../components/ui/user/Header";
 import { VideoGrid } from "../../components/layouts/user/VideoGrid";
 import { VideoCarousel } from "../../components/layouts/user/VideoCarousel";
 import { VideoList } from "../../components/ui/user/VideoList";
@@ -7,6 +7,7 @@ import { CinematicShelf } from "../../components/layouts/user/CinematicShelf";
 import { GenreSelector } from "../../components/layouts/user/GenreSelector";
 import { ViewModeSelector } from "../../components/layouts/user/ViewModeSelector";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
+import { HeroSection } from "../../components/layouts/user/HeroSection";
 import { mockVideos } from "../../libs/mockVideos";
 import {
   Sparkles,
@@ -25,7 +26,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState("grid");
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
-  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+
 
   const filteredVideos = mockVideos.filter((video) => {
     const matchesGenre =
@@ -54,42 +55,67 @@ export default function Home() {
   const heroSlides = [
     {
       id: 1,
-      title: "The Shawshank Redemption",
-      subtitle: "Hope is a good thing, maybe the best of things",
-      genre: "Drama",
-      year: "1994",
-      rating: "9.3",
-      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&h=600&fit=crop",
-      color: "from-blue-600 to-indigo-700"
+      title: "AVATAR",
+      subtitle: "Enter the world of Pandora and discover a new dimension of storytelling",
+      genre: "Sci-Fi",
+      year: "2022",
+      rating: "9.2",
+      image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1400&h=800&fit=crop",
+      color: "from-cyan-600 to-blue-800"
     },
     {
       id: 2,
-      title: "Inception",
-      subtitle: "Your mind is the scene of the crime",
+      title: "DUNE",
+      subtitle: "The spice must flow. A cinematic masterpiece of epic proportions",
       genre: "Sci-Fi",
-      year: "2010",
-      rating: "8.8",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=600&fit=crop",
-      color: "from-purple-600 to-pink-700"
+      year: "2021",
+      rating: "8.9",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&h=800&fit=crop",
+      color: "from-amber-600 to-orange-800"
     },
     {
       id: 3,
-      title: "Pulp Fiction",
-      subtitle: "You won't know the facts until you've seen the fiction",
-      genre: "Crime",
-      year: "1994",
-      rating: "8.9",
-      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&h=600&fit=crop",
-      color: "from-orange-600 to-red-700"
+      title: "BLADE RUNNER 2049",
+      subtitle: "The future is now. A visual and narrative masterpiece",
+      genre: "Sci-Fi",
+      year: "2017",
+      rating: "8.7",
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1400&h=800&fit=crop",
+      color: "from-purple-600 to-pink-800"
+    },
+    {
+      id: 4,
+      title: "MAD MAX: FURY ROAD",
+      subtitle: "A high-octane thrill ride through the wasteland",
+      genre: "Action",
+      year: "2015",
+      rating: "8.8",
+      image: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1400&h=800&fit=crop",
+      color: "from-red-600 to-orange-700"
+    },
+    {
+      id: 5,
+      title: "INCEPTION",
+      subtitle: "Your mind is the scene of the crime. Dreams within dreams",
+      genre: "Sci-Fi",
+      year: "2010",
+      rating: "8.8",
+      image: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1400&h=800&fit=crop",
+      color: "from-indigo-600 to-purple-800"
+    },
+    {
+      id: 6,
+      title: "THE DARK KNIGHT",
+      subtitle: "Why so serious? The definitive superhero film",
+      genre: "Action",
+      year: "2008",
+      rating: "9.0",
+      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&h=800&fit=crop",
+      color: "from-gray-800 to-black"
     }
   ];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
+
 
   const renderVideos = (videos) => {
     if (videos.length === 0) return null;
@@ -97,51 +123,81 @@ export default function Home() {
     switch (viewMode) {
       case "grid":
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
             {videos.map((video, index) => (
-              <div key={video.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <VideoCard
-                  video={video}
-                  isFavorite={favorites.includes(video.id)}
-                  isRecentlyWatched={recentlyWatched.includes(video.id)}
-                  onSelect={() => handleVideoSelect(video)}
-                  onToggleFavorite={() => toggleFavorite(video.id)}
-                  animationDelay={index * 0.1}
-                />
+              <div 
+                key={video.id} 
+                className="group transform transition-all duration-500 hover:scale-105 hover:-translate-y-2"
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                  animation: `fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
+                }}
+              >
+                <div className="relative">
+                  <VideoCard
+                    video={video}
+                    isFavorite={favorites.includes(video.id)}
+                    isRecentlyWatched={recentlyWatched.includes(video.id)}
+                    onSelect={() => handleVideoSelect(video)}
+                    onToggleFavorite={() => toggleFavorite(video.id)}
+                    animationDelay={index * 0.1}
+                  />
+                  {/* Enhanced hover effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                </div>
               </div>
             ))}
           </div>
         );
       case "list":
         return (
-          <VideoList
-            videos={videos}
-            favorites={favorites}
-            recentlyWatched={recentlyWatched}
-            onVideoSelect={handleVideoSelect}
-            onToggleFavorite={toggleFavorite}
-          />
+          <div className="space-y-4">
+            {videos.map((video, index) => (
+              <div 
+                key={video.id}
+                className="transform transition-all duration-500 hover:scale-[1.02] hover:translate-x-2"
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                  animation: `fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
+                }}
+              >
+                <VideoList
+                  videos={[video]}
+                  favorites={favorites}
+                  recentlyWatched={recentlyWatched}
+                  onVideoSelect={handleVideoSelect}
+                  onToggleFavorite={toggleFavorite}
+                />
+              </div>
+            ))}
+          </div>
         );
       case "carousel":
         return (
-          <VideoCarousel
-            videos={videos}
-            favorites={favorites}
-            recentlyWatched={recentlyWatched}
-            onVideoSelect={handleVideoSelect}
-            onToggleFavorite={toggleFavorite}
-          />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-transparent to-neutral-950 pointer-events-none z-10"></div>
+            <VideoCarousel
+              videos={videos}
+              favorites={favorites}
+              recentlyWatched={recentlyWatched}
+              onVideoSelect={handleVideoSelect}
+              onToggleFavorite={toggleFavorite}
+            />
+          </div>
         );
       case "shelf":
         return (
-          <CinematicShelf
-            videos={videos}
-            favorites={favorites}
-            recentlyWatched={recentlyWatched}
-            onVideoSelect={handleVideoSelect}
-            onToggleFavorite={toggleFavorite}
-            selectedGenre={selectedGenre}
-          />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950 pointer-events-none z-10"></div>
+            <CinematicShelf
+              videos={videos}
+              favorites={favorites}
+              recentlyWatched={recentlyWatched}
+              onVideoSelect={handleVideoSelect}
+              onToggleFavorite={toggleFavorite}
+              selectedGenre={selectedGenre}
+            />
+          </div>
         );
       default:
         return null;
@@ -149,193 +205,107 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background-primary relative overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
+      <Header />
+      
+      {/* Full Width Hero Section */}
+      <HeroSection slides={heroSlides} />
+      
+      <main className="max-w-7xl mx-auto px-6 py-12 layout-content">
+        {/* Enhanced Section Header */}
+        <div className="mb-12 section-header">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gradient-primary mb-2">
+                Discover Amazing Content
+              </h2>
+              <p className="text-neutral-400 text-lg">
+                Explore our curated collection of premium videos
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <GenreSelector selectedGenre={selectedGenre} onGenreChange={setSelectedGenre} />
+              <ViewModeSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+            </div>
+          </div>
+        </div>
 
-      <Header
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        totalVideos={filteredVideos.length}
-        totalFavorites={favorites.length}
-      />
-
-      {/* Hero */}
-      <section className="relative h-96 mb-12 overflow-hidden">
-        <div className="relative h-full">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${slide.image})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
+        {/* Enhanced Content Section */}
+        <section className="relative">
+          {/* Background Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-red-500/10 to-orange-500/10 rounded-full blur-3xl"></div>
+          
+          {/* Content Container */}
+          <div className="relative z-10">
+            {filteredVideos.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="relative mb-8">
+                  <div className="w-32 h-32 bg-gradient-to-br from-neutral-800 to-neutral-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                    <span className="text-6xl">🎬</span>
+                  </div>
+                  <div className="absolute inset-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
+                </div>
+                <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-white to-neutral-300 bg-clip-text text-transparent">
+                  No videos found
+                </h3>
+                <p className="text-neutral-400 max-w-md mx-auto text-lg leading-relaxed">
+                  Try adjusting your search or genre filters to discover more amazing content.
+                </p>
+                <div className="mt-8">
+                  <button 
+                    onClick={() => setSelectedGenre("all")}
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Show All Videos
+                  </button>
+                </div>
               </div>
-              <div className="relative h-full flex items-center">
-                <div className="container mx-auto px-6">
-                  <div className="max-w-2xl">
-                    <div className="mb-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${slide.color} text-white`}>
-                        {slide.genre}
+            ) : (
+              <div className="space-y-8">
+                {/* Results Summary */}
+                <div className="flex items-center justify-between mb-8 results-summary">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 glass-card">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      <span className="text-sm font-medium text-white">
+                        {filteredVideos.length} videos found
                       </span>
                     </div>
-                    <h1 className="text-5xl font-bold text-white mb-4 leading-tight">
-                      {slide.title}
-                    </h1>
-                    <p className="text-xl text-gray-300 mb-6 leading-relaxed">
-                      {slide.subtitle}
-                    </p>
-                    <div className="flex items-center gap-6 mb-8">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                        <span className="text-white font-semibold">{slide.rating}</span>
+                    {selectedGenre !== "all" && (
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-500/30 glass-card">
+                        <span className="text-sm font-medium text-blue-300">
+                          Genre: {selectedGenre}
+                        </span>
                       </div>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-gray-300">{slide.year}</span>
-                    </div>
-                    <button className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-200 hover:scale-105">
-                      <Play className="w-5 h-5" />
-                      Watch Now
-                    </button>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-neutral-400">Viewing as</p>
+                    <p className="text-lg font-semibold text-white capitalize">{viewMode}</p>
+                  </div>
+                </div>
+
+                {/* Enhanced Video Grid/List */}
+                <div className="relative video-grid">
+                  {renderVideos(filteredVideos)}
+                </div>
+
+                {/* Enhanced Footer */}
+                <div className="mt-16 text-center">
+                  <div className="inline-flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-full px-8 py-4 border border-white/10">
+                    <span className="text-neutral-400">🎬</span>
+                    <span className="text-white font-medium">
+                      End of results • {filteredVideos.length} videos loaded
+                    </span>
+                    <span className="text-neutral-400">🎬</span>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <button
-            onClick={() => setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-            className="absolute left-6 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/30 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={() => setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length)}
-            className="absolute right-6 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/30 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-            {heroSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentHeroSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentHeroSlide ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/75'}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="relative z-10 px-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 p-6 bg-background-elevated/50 backdrop-blur-sm rounded-2xl border border-white/10">
-          <div className="flex items-center gap-4">
-            <GenreSelector
-              selectedGenre={selectedGenre}
-              onGenreChange={setSelectedGenre}
-            />
-            <ViewModeSelector
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-            />
-          </div>
-        </div>
-
-        {featuredVideos.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                <Star className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground-primary">
-                Featured Collection
-              </h2>
-            </div>
-            <VideoCarousel
-              videos={featuredVideos}
-              favorites={favorites}
-              recentlyWatched={recentlyWatched}
-              onVideoSelect={handleVideoSelect}
-              onToggleFavorite={toggleFavorite}
-            />
-          </section>
-        )}
-
-        {trendingVideos.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground-primary">
-                Trending Now
-              </h2>
-            </div>
-            {renderVideos(trendingVideos.slice(0, 8))}
-          </section>
-        )}
-
-        {recentlyWatched.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground-primary">
-                Continue Watching
-              </h2>
-            </div>
-            {(() => {
-              const recentVideos = recentlyWatched.slice(0, 5)
-                .map(videoId => mockVideos.find(v => v.id === videoId))
-                .filter(Boolean);
-              return renderVideos(recentVideos);
-            })()}
-          </section>
-        )}
-
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground-primary">
-              {selectedGenre === "all" ? "All Videos" : `${selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1)} Collection`}
-            </h2>
-            {filteredVideos.length > 0 && (
-              <span className="px-3 py-1 bg-background-elevated/50 rounded-full text-sm text-foreground-secondary border border-white/10">
-                {filteredVideos.length} videos
-              </span>
             )}
           </div>
-
-          {filteredVideos.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-background-elevated/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="w-12 h-12 text-foreground-muted" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground-primary mb-2">
-                No videos found
-              </h3>
-              <p className="text-foreground-secondary max-w-md mx-auto">
-                Try adjusting your search or genre filters to discover more content
-              </p>
-            </div>
-          ) : (
-            <div className="animate-fade-in">
-              {renderVideos(filteredVideos)}
-            </div>
-          )}
         </section>
-      </div>
+      </main>
     </div>
   );
 }

@@ -62,32 +62,32 @@ export function GenreSelector({ selectedGenre, onGenreChange }) {
             key={genre.value}
             onClick={() => onGenreChange(genre.value)}
             className={`
-              group relative px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105
+              group relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:-translate-y-1
               ${
                 selectedGenre === genre.value
-                  ? `bg-gradient-to-r ${genre.gradient} text-white shadow-xl scale-105`
-                  : `bg-background-elevated/50 text-foreground-secondary hover:text-foreground-primary hover:bg-white/5 border border-white/10 backdrop-blur-sm`
+                  ? `bg-gradient-to-r ${genre.gradient} text-white shadow-2xl scale-105 border-2 border-white/20`
+                  : `bg-white/10 backdrop-blur-md text-white hover:text-white hover:bg-white/20 border-2 border-white/20 hover:border-white/40`
               }
             `}
           >
             {selectedGenre === genre.value && (
-              <div className={`absolute -inset-1 bg-gradient-to-r ${genre.gradient} rounded-xl blur-xl opacity-50`}></div>
+              <div className={`absolute -inset-1 bg-gradient-to-r ${genre.gradient} rounded-full blur-xl opacity-60 animate-pulse`}></div>
             )}
             
-            <div className="relative flex items-center gap-2">
-              <Icon
-                className={`w-4 h-4 ${
-                  selectedGenre === genre.value
-                    ? "text-white"
-                    : "text-foreground-muted group-hover:text-foreground-primary"
-                }`}
-              />
-              <span>{genre.label}</span>
+            <div className="relative flex items-center gap-3">
+              <div className={`p-1.5 rounded-full ${
+                selectedGenre === genre.value
+                  ? "bg-white/20 backdrop-blur-sm"
+                  : "bg-white/10 group-hover:bg-white/20"
+              }`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <span className="font-medium">{genre.label}</span>
             </div>
             
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-background-elevated/95 backdrop-blur-xl border border-white/10 rounded-lg text-xs text-foreground-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-2 bg-black/80 backdrop-blur-xl border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
               {genre.description}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-background-elevated/95"></div>
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80"></div>
             </div>
           </button>
         )
