@@ -1,12 +1,12 @@
 // import packages
 const dotenv = require('dotenv').config();
 const express = require('express');
-const supabase = require('./configs/db');
+const { dbConnect }= require('./configs/db');
 
 const app = express();
 
 // import database
-supabase;
+dbConnect();
 
 // import routers
 const userRegisterRouter = require('./routes/user.Route');
