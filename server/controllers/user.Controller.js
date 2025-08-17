@@ -1,4 +1,5 @@
-const supabase = require("../configs/db");
+const { getSupabase } = require("../configs/db");
+const supabase = getSupabase();
 
 function sendError(res, status, message, details = null) {
   return res.status(status).json({ ok: false, message, details });
@@ -73,10 +74,22 @@ exports.login = async (req, res) => {
       return sendError(res, 400, "Email and password are required");
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Defensive: check if supabase.auth and signInWithPassword exist
+    if (!supabase.auth || typeof supabase.auth.signInWithPassword !== 'function') {
+      console.error('Supabase auth client is not initialized or signInWithPassword is missing');
+      return sendError(res, 500, 'Supabase auth client misconfiguration');
+    }
+
+    let data, error;
+    try {
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      }));
+    } catch (err) {
+      console.error('Error during signInWithPassword:', err);
+      return sendError(res, 500, 'Error during login');
+    }
 
     if (error) {
       return sendError(
