@@ -1,23 +1,28 @@
 const { getSupabase } = require("../configs/db");
-const supabase = getSupabase();
 
 function sendError(res, status, message, details = null) {
   return res.status(status).json({ ok: false, message, details });
 }
+
+// user register api
 exports.register = async (req, res) => {
   try {
-    const { email, password, fullName } = req.body || {};
+    const supabase = getSupabase();
+    const { FirstName, LastName, Email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (!Email || !password) {
       return sendError(res, 400, "Email and password are required");
     }
 
-    // Register with Supabase Auth
+    // Register with Supabase Auth (email/password) and store names in metadata
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: Email,
       password,
       options: {
-        data: fullName ? { name: fullName } : undefined,
+        data: {
+          FirstName,
+          LastName,
+        },
       },
     });
 
@@ -28,20 +33,21 @@ exports.register = async (req, res) => {
     const { user, session } = data || {};
 
     // Insert into custom users table if registration succeeded
-    if (user && fullName) {
+    if (user && FirstName && LastName) {
       try {
-        const { error: dbError } = await supabase.from('users').insert([
+        const { error: dbError } = await supabase.from("users").insert([
           {
             id: user.id,
-            email: user.email,
-            fullname: fullName
-          }
+            Email: user.email,
+            FirstName: FirstName,
+            LastName: LastName,
+          },
         ]);
         if (dbError) {
-          console.error('Error inserting into users table:', dbError);
+          console.error("Error inserting into users table:", dbError);
         }
       } catch (dbInsertErr) {
-        console.error('DB insert error:', dbInsertErr);
+        console.error("DB insert error:", dbInsertErr);
       }
     }
 
@@ -50,7 +56,7 @@ exports.register = async (req, res) => {
       message:
         "Registration successful. Check your email to confirm your account (if required).",
       user: user
-        ? { id: user.id, email: user.email, user_metadata: user.user_metadata }
+        ? { id: user.id, Email: user.email, user_metadata: user.user_metadata }
         : null,
       session: session
         ? {
@@ -66,29 +72,36 @@ exports.register = async (req, res) => {
   }
 };
 
+// user login api
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const supabase = getSupabase();
+    const { Email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (!Email || !password) {
       return sendError(res, 400, "Email and password are required");
     }
 
     // Defensive: check if supabase.auth and signInWithPassword exist
-    if (!supabase.auth || typeof supabase.auth.signInWithPassword !== 'function') {
-      console.error('Supabase auth client is not initialized or signInWithPassword is missing');
-      return sendError(res, 500, 'Supabase auth client misconfiguration');
+    if (
+      !supabase.auth ||
+      typeof supabase.auth.signInWithPassword !== "function"
+    ) {
+      console.error(
+        "Supabase auth client is not initialized or signInWithPassword is missing"
+      );
+      return sendError(res, 500, "Supabase auth client misconfiguration");
     }
 
     let data, error;
     try {
       ({ data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: Email,
         password,
       }));
     } catch (err) {
-      console.error('Error during signInWithPassword:', err);
-      return sendError(res, 500, 'Error during login');
+      console.error("Error during signInWithPassword:", err);
+      return sendError(res, 500, "Error during login");
     }
 
     if (error) {
@@ -101,12 +114,11 @@ exports.login = async (req, res) => {
     }
 
     const { user, session } = data || {};
-
     return res.status(200).json({
       ok: true,
       message: "Login successful",
       user: user
-        ? { id: user.id, email: user.email, user_metadata: user.user_metadata }
+        ? { id: user.id, Email: user.email, user_metadata: user.user_metadata }
         : null,
       session: session
         ? {
