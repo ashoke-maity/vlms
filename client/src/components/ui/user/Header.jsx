@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { User, LogOut } from "lucide-react";  
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -12,9 +14,27 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const isActiveLink = (href) => {
     return location.pathname === href;
+  };
+
+  const handleLogout = () => {
+    logout();
+    setAvatarOpen(false);
+    navigate("/login");
+  };
+
+  const getUserInitials = () => {
+    if (user?.user_metadata?.FirstName && user?.user_metadata?.LastName) {
+      return `${user.user_metadata.FirstName[0]}${user.user_metadata.LastName[0]}`.toUpperCase();
+    }
+    if (user?.Email) {
+      return user.Email[0].toUpperCase();
+    }
+    return "U";
   };
 
   return (
@@ -43,20 +63,67 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* User Avatar */}
-        <div className="relative">
-          <button
-            onClick={() => setAvatarOpen((v) => !v)}
-            className="focus:outline-none flex items-center justify-center w-9 h-9 rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
-            aria-label="User menu"
-          >
-            <span className="text-lg text-white font-bold">U</span>
-          </button>
-          {avatarOpen && (
-            <div className="absolute right-0 mt-2 w-36 bg-neutral-900 text-white rounded-lg shadow-lg py-2 z-50 border border-neutral-700">
-              <Link to="/profile" className="block px-4 py-2 hover:bg-neutral-800 transition-colors">Profile</Link>
-              <Link to="/settings" className="block px-4 py-2 hover:bg-neutral-800 transition-colors">Settings</Link>
-              <Link to="/login" className="block px-4 py-2 hover:bg-neutral-800 transition-colors">Logout</Link>
+        {/* User Section */}
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <div className="relative">
+              <button
+                onClick={() => setAvatarOpen((v) => !v)}
+                className="focus:outline-none flex items-center gap-2 px-3 py-2 rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
+                aria-label="User menu"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-sm text-white font-bold">{getUserInitials()}</span>
+                </div>
+                <span className="hidden sm:block text-white text-sm">
+                  {user?.user_metadata?.FirstName || 'User'}
+                </span>
+              </button>
+              {avatarOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-neutral-900 text-white rounded-lg shadow-lg py-2 z-50 border border-neutral-700">
+                  <div className="px-4 py-2 border-b border-neutral-700">
+                    <p className="text-sm font-medium">{user?.user_metadata?.FirstName} {user?.user_metadata?.LastName}</p>
+                    <p className="text-xs text-neutral-400">{user?.Email}</p>
+                  </div>
+                  <Link 
+                    to="/profile" 
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition-colors"
+                    onClick={() => setAvatarOpen(false)}
+                  >
+                    <User size={16} />
+                    Profile
+                  </Link>
+                  <Link 
+                    to="/settings" 
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition-colors"
+                    onClick={() => setAvatarOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full px-4 py-2 hover:bg-neutral-800 transition-colors text-left"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-neutral-300 hover:text-white transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Sign Up
+              </Link>
             </div>
           )}
         </div>
@@ -86,9 +153,23 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
-          <Link to="/profile" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Profile</Link>
-          <Link to="/settings" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Settings</Link>
-          <Link to="/login" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Logout</Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Profile</Link>
+              <Link to="/settings" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Settings</Link>
+              <button 
+                onClick={handleLogout}
+                className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded text-left w-full"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Login</Link>
+              <Link to="/register" className="text-blue-400 hover:text-blue-300 transition-colors px-2 py-2 rounded">Sign Up</Link>
+            </>
+          )}
         </nav>
       )}
     </header>

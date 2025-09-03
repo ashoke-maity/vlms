@@ -8,7 +8,7 @@ import { GenreSelector } from "../../components/layouts/user/GenreSelector";
 import { ViewModeSelector } from "../../components/layouts/user/ViewModeSelector";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { HeroSection } from "../../components/layouts/user/HeroSection";
-import { mockVideos } from "../../libs/mockVideos";
+import { fetchTMDBVideos } from "../../libs/tmdb";
 import {
   Sparkles,
   TrendingUp,
@@ -26,16 +26,18 @@ export default function Home() {
   const [viewMode, setViewMode] = useState("grid");
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setLoading(true);
+    fetchTMDBVideos({ query: searchQuery, genre: selectedGenre === 'all' ? '' : selectedGenre })
+      .then(results => setVideos(results))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false));
+  }, [searchQuery, selectedGenre]);
 
-  const filteredVideos = mockVideos.filter((video) => {
-    const matchesGenre =
-      selectedGenre === "all" || video.genre === selectedGenre;
-    const matchesSearch =
-      video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      video.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGenre && matchesSearch;
-  });
+  const filteredVideos = videos;
 
   const toggleFavorite = (videoId) => {
     setFavorites((prev) =>
@@ -49,8 +51,8 @@ export default function Home() {
     setRecentlyWatched((prev) => [video.id, ...prev.filter((id) => id !== video.id)].slice(0, 5));
   };
 
-  const featuredVideos = mockVideos.slice(0, 6);
-  const trendingVideos = mockVideos.filter(v => v.watchCount > 1000).slice(0, 8);
+  const featuredVideos = videos.slice(0, 6);
+  const trendingVideos = videos.slice(0, 8);
 
   const heroSlides = [
     {
