@@ -14,7 +14,7 @@ import {
   X,
   SlidersHorizontal
 } from "lucide-react";
-import { mockVideos } from "../../libs/mockVideos";
+import { fetchTMDBVideos } from "../../libs/tmdb";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { VideoList } from "../../components/ui/user/VideoList";
 
@@ -28,6 +28,8 @@ export default function Browse() {
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Available filter options
   const genres = ["action", "comedy", "drama", "horror", "sci-fi"];
@@ -44,50 +46,15 @@ export default function Browse() {
     { value: "dateAdded", label: "Recently Added" }
   ];
 
-  // Filter and sort videos
-  const filteredVideos = mockVideos
-    .filter((video) => {
-      // Search filter
-      const matchesSearch = searchQuery === "" || 
-        video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        video.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Genre filter
-      const matchesGenre = selectedGenres.length === 0 || 
-        selectedGenres.includes(video.genre);
-      
-      // Year filter
-      const matchesYear = selectedYears.length === 0 || 
-        selectedYears.includes(video.year.toString());
-      
-      // Rating filter
-      const matchesRating = selectedRatings.length === 0 || 
-        selectedRatings.some(rating => video.rating >= parseInt(rating));
-      
-      return matchesSearch && matchesGenre && matchesYear && matchesRating;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "title":
-          return a.title.localeCompare(b.title);
-        case "title-desc":
-          return b.title.localeCompare(a.title);
-        case "year":
-          return b.year - a.year;
-        case "year-desc":
-          return a.year - b.year;
-        case "rating":
-          return b.rating - a.rating;
-        case "rating-desc":
-          return a.rating - b.rating;
-        case "watchCount":
-          return b.watchCount - a.watchCount;
-        case "dateAdded":
-          return new Date(b.dateAdded) - new Date(a.dateAdded);
-        default:
-          return 0;
-      }
-    });
+  useEffect(() => {
+    setLoading(true);
+    fetchTMDBVideos({ query: searchQuery, genre: selectedGenres[0] || '' })
+      .then(results => setVideos(results))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false));
+  }, [searchQuery, selectedGenres]);
+
+  const filteredVideos = videos;
 
   const toggleFavorite = (videoId) => {
     setFavorites((prev) =>

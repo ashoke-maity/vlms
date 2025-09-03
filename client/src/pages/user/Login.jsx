@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -8,9 +9,9 @@ export default function Login() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { login, loading: isLoading } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,22 +52,17 @@ export default function Login() {
     
     if (!validateForm()) return;
     
-    setIsLoading(true);
-    
     try {
-      // TODO: Implement actual login API call
-      console.log("Login attempt:", formData);
+      const result = await login(formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For now, just navigate to home
-      navigate("/");
+      if (result.success) {
+        navigate("/");
+      } else {
+        setErrors({ general: result.error });
+      }
     } catch (error) {
       console.error("Login error:", error);
       setErrors({ general: "Login failed. Please try again." });
-    } finally {
-      setIsLoading(false);
     }
   };
 

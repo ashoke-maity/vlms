@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Check } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,10 +13,10 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
+  const { register: registerUser, loading: isLoading } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,22 +77,18 @@ export default function Register() {
     
     if (!validateForm()) return;
     
-    setIsLoading(true);
-    
     try {
-      // TODO: Implement actual registration API call
-      console.log("Registration attempt:", formData);
+      const result = await registerUser(formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For now, just navigate to login
-      navigate("/login");
+      if (result.success) {
+        // Registration successful, redirect to home
+        navigate("/");
+      } else {
+        setErrors({ general: result.error });
+      }
     } catch (error) {
       console.error("Registration error:", error);
       setErrors({ general: "Registration failed. Please try again." });
-    } finally {
-      setIsLoading(false);
     }
   };
 
