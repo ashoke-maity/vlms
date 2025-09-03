@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import Header from "../../components/ui/user/Header";
-import { VideoGrid } from "../../components/layouts/user/VideoGrid";
-import { VideoCarousel } from "../../components/layouts/user/VideoCarousel";
-import { VideoList } from "../../components/ui/user/VideoList";
-import { CinematicShelf } from "../../components/layouts/user/CinematicShelf";
-import { GenreSelector } from "../../components/layouts/user/GenreSelector";
-import { ViewModeSelector } from "../../components/layouts/user/ViewModeSelector";
+
+
+
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { HeroSection } from "../../components/layouts/user/HeroSection";
 import { fetchTMDBVideos } from "../../libs/tmdb";
@@ -21,9 +18,9 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const [selectedGenre, setSelectedGenre] = useState("all");
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
+
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -31,11 +28,11 @@ export default function Home() {
 
   useEffect(() => {
     setLoading(true);
-    fetchTMDBVideos({ query: searchQuery, genre: selectedGenre === 'all' ? '' : selectedGenre })
+    fetchTMDBVideos({ query: searchQuery })
       .then(results => setVideos(results))
       .catch(() => setVideos([]))
       .finally(() => setLoading(false));
-  }, [searchQuery, selectedGenre]);
+  }, [searchQuery]);
 
   const filteredVideos = videos;
 
@@ -122,88 +119,33 @@ export default function Home() {
   const renderVideos = (videos) => {
     if (videos.length === 0) return null;
 
-    switch (viewMode) {
-      case "grid":
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            {videos.map((video, index) => (
-              <div 
-                key={video.id} 
-                className="group transform transition-all duration-500 hover:scale-105 hover:-translate-y-2"
-                style={{ 
-                  animationDelay: `${index * 0.1}s`,
-                  animation: `fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
-                }}
-              >
-                <div className="relative">
-                  <VideoCard
-                    video={video}
-                    isFavorite={favorites.includes(video.id)}
-                    isRecentlyWatched={recentlyWatched.includes(video.id)}
-                    onSelect={() => handleVideoSelect(video)}
-                    onToggleFavorite={() => toggleFavorite(video.id)}
-                    animationDelay={index * 0.1}
-                  />
-                  {/* Enhanced hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-                </div>
-              </div>
-            ))}
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+        {videos.map((video, index) => (
+          <div 
+            key={video.id} 
+            className="group transform transition-all duration-500 hover:scale-105 hover:-translate-y-2"
+            style={{ 
+              animationDelay: `${index * 0.1}s`,
+              animation: `fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
+            }}
+          >
+            <div className="relative">
+              <VideoCard
+                video={video}
+                isFavorite={favorites.includes(video.id)}
+                isRecentlyWatched={recentlyWatched.includes(video.id)}
+                onSelect={() => handleVideoSelect(video)}
+                onToggleFavorite={() => toggleFavorite(video.id)}
+                animationDelay={index * 0.1}
+              />
+              {/* Enhanced hover effect */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+            </div>
           </div>
-        );
-      case "list":
-        return (
-          <div className="space-y-4">
-            {videos.map((video, index) => (
-              <div 
-                key={video.id}
-                className="transform transition-all duration-500 hover:scale-[1.02] hover:translate-x-2"
-                style={{ 
-                  animationDelay: `${index * 0.1}s`,
-                  animation: `fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
-                }}
-              >
-                <VideoList
-                  videos={[video]}
-                  favorites={favorites}
-                  recentlyWatched={recentlyWatched}
-                  onVideoSelect={handleVideoSelect}
-                  onToggleFavorite={toggleFavorite}
-                />
-              </div>
-            ))}
-          </div>
-        );
-      case "carousel":
-        return (
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-transparent to-neutral-950 pointer-events-none z-10"></div>
-            <VideoCarousel
-              videos={videos}
-              favorites={favorites}
-              recentlyWatched={recentlyWatched}
-              onVideoSelect={handleVideoSelect}
-              onToggleFavorite={toggleFavorite}
-            />
-          </div>
-        );
-      case "shelf":
-        return (
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950 pointer-events-none z-10"></div>
-            <CinematicShelf
-              videos={videos}
-              favorites={favorites}
-              recentlyWatched={recentlyWatched}
-              onVideoSelect={handleVideoSelect}
-              onToggleFavorite={toggleFavorite}
-              selectedGenre={selectedGenre}
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -226,8 +168,8 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <GenreSelector selectedGenre={selectedGenre} onGenreChange={setSelectedGenre} />
-              <ViewModeSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+
+
             </div>
           </div>
         </div>
@@ -252,15 +194,10 @@ export default function Home() {
                   No videos found
                 </h3>
                 <p className="text-neutral-400 max-w-md mx-auto text-lg leading-relaxed">
-                  Try adjusting your search or genre filters to discover more amazing content.
+                  Try adjusting your search to discover more amazing content.
                 </p>
                 <div className="mt-8">
-                  <button 
-                    onClick={() => setSelectedGenre("all")}
-                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  >
-                    Show All Videos
-                  </button>
+                  
                 </div>
               </div>
             ) : (
@@ -274,18 +211,9 @@ export default function Home() {
                         {filteredVideos.length} videos found
                       </span>
                     </div>
-                    {selectedGenre !== "all" && (
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-500/30 glass-card">
-                        <span className="text-sm font-medium text-blue-300">
-                          Genre: {selectedGenre}
-                        </span>
-                      </div>
-                    )}
+
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-neutral-400">Viewing as</p>
-                    <p className="text-lg font-semibold text-white capitalize">{viewMode}</p>
-                  </div>
+
                 </div>
 
                 {/* Enhanced Video Grid/List */}

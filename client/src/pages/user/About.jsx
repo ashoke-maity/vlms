@@ -22,7 +22,7 @@ export default function About() {
     {
       icon: Play,
       title: "Extensive Video Library",
-      description: "Access thousands of high-quality videos across multiple genres and categories."
+      description: "Access thousands of high-quality videos across multiple categories."
     },
     {
       icon: Heart,
@@ -47,7 +47,7 @@ export default function About() {
     {
       icon: Film,
       title: "Multiple View Modes",
-      description: "Choose from grid, list, carousel, or cinematic shelf viewing options."
+      description: "Choose from multiple viewing options for the best experience."
     }
   ];
 

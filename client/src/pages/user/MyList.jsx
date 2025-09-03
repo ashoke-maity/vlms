@@ -1,11 +1,9 @@
 // import { fetchTMDBVideos } from "../../libs/tmdb";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ArrowLeft,
   Heart,
-  Grid,
-  List,
   Search,
   Filter,
   Trash2,
@@ -17,11 +15,11 @@ import {
   X
 } from "lucide-react";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
-import { VideoList } from "../../components/ui/user/VideoList";
+
 
 export default function MyList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
+
   const [sortBy, setSortBy] = useState("dateAdded");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedVideos, setSelectedVideos] = useState([]);
@@ -150,33 +148,21 @@ export default function MyList() {
       );
     }
 
-    if (viewMode === "grid") {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredVideos.map((video, index) => (
-            <div key={video.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <VideoCard
-                video={video}
-                isFavorite={favorites.includes(video.id)}
-                isRecentlyWatched={recentlyWatched.includes(video.id)}
-                onSelect={() => handleVideoSelect(video)}
-                onToggleFavorite={() => toggleFavorite(video.id)}
-                animationDelay={index * 0.1}
-              />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
     return (
-      <VideoList
-        videos={filteredVideos}
-        favorites={favorites}
-        recentlyWatched={recentlyWatched}
-        onVideoSelect={handleVideoSelect}
-        onToggleFavorite={toggleFavorite}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {filteredVideos.map((video, index) => (
+          <div key={video.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+            <VideoCard
+              video={video}
+              isFavorite={favorites.includes(video.id)}
+              isRecentlyWatched={recentlyWatched.includes(video.id)}
+              onSelect={() => handleVideoSelect(video)}
+              onToggleFavorite={() => toggleFavorite(video.id)}
+              animationDelay={index * 0.1}
+            />
+          </div>
+        ))}
+      </div>
     );
   };
 
@@ -213,28 +199,7 @@ export default function MyList() {
                   <Filter size={16} />
                   Filters
                 </button>
-                <div className="flex items-center gap-1 bg-neutral-800 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === "grid" 
-                        ? "bg-blue-600 text-white" 
-                        : "text-neutral-400 hover:text-white"
-                    }`}
-                  >
-                    <Grid size={16} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === "list" 
-                        ? "bg-blue-600 text-white" 
-                        : "text-neutral-400 hover:text-white"
-                    }`}
-                  >
-                    <List size={16} />
-                  </button>
-                </div>
+
                 {filteredVideos.length > 0 && (
                   <button
                     onClick={enterSelectionMode}

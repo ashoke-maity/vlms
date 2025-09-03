@@ -29,7 +29,7 @@ export default function Profile() {
     joinDate: "2024-01-15",
     avatar: null,
     preferences: {
-      favoriteGenres: ["sci-fi", "action", "drama"],
+
       notifications: {
         email: true,
         push: false,
@@ -225,20 +225,7 @@ export default function Profile() {
                 )}
               </div>
 
-              {/* Favorite Genres */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-neutral-300 mb-2">Favorite Genres</h3>
-                <div className="flex flex-wrap gap-2">
-                  {userData.preferences.favoriteGenres.map((genre) => (
-                    <span
-                      key={genre}
-                      className="px-2 py-1 bg-neutral-800 text-xs rounded-full text-neutral-300"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
-              </div>
+
 
               {/* Action Buttons */}
               <div className="flex gap-3">

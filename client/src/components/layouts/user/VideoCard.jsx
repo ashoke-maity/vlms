@@ -95,11 +95,8 @@ export function VideoCard({
             <span>{video.duration}</span>
           </div>
 
-          {/* Genre */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-neutral-500 uppercase tracking-wide">
-              {video.genre}
-            </span>
+          {/* Watch Count */}
+          <div className="flex items-center justify-end">
             <div className="flex items-center gap-1 text-xs text-neutral-500">
               <Eye className="w-3 h-3" />
               <span>{typeof video.watchCount === 'number' ? video.watchCount.toLocaleString() : 'N/A'}</span>

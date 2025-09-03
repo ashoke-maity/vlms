@@ -6,9 +6,7 @@ class VideoService {
     try {
       const params = new URLSearchParams();
       
-      if (filters.genre && filters.genre !== 'all') {
-        params.append('genre', filters.genre);
-      }
+
       
       if (filters.search) {
         params.append('search', filters.search);
