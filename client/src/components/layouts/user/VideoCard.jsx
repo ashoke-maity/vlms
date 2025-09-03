@@ -102,7 +102,7 @@ export function VideoCard({
             </span>
             <div className="flex items-center gap-1 text-xs text-neutral-500">
               <Eye className="w-3 h-3" />
-              <span>{video.watchCount.toLocaleString()}</span>
+              <span>{typeof video.watchCount === 'number' ? video.watchCount.toLocaleString() : 'N/A'}</span>
             </div>
           </div>
         </div>

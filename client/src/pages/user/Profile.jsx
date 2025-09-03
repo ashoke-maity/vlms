@@ -1,3 +1,4 @@
+// import { fetchTMDBVideos } from "../../libs/tmdb";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -16,7 +17,7 @@ import {
   Settings,
   ArrowLeft
 } from "lucide-react";
-import { mockVideos } from "../../libs/mockVideos";
+
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -49,13 +50,21 @@ export default function Profile() {
     reviewsWritten: 12
   };
 
-  // Mock recent activity
-  const recentActivity = [
-    { type: "watched", video: mockVideos[0], date: "2024-03-15" },
-    { type: "favorited", video: mockVideos[2], date: "2024-03-14" },
-    { type: "rated", video: mockVideos[4], rating: 4, date: "2024-03-13" },
-    { type: "watched", video: mockVideos[6], date: "2024-03-12" },
-  ];
+  // Recent activity should come from user data or API
+  const [recentActivity, setRecentActivity] = useState([]);
+  // Fetch videos from TMDB API (example: popular)
+  useEffect(() => {
+    import('../../libs/tmdb').then(({ fetchTMDBVideos }) => {
+      fetchTMDBVideos({}).then(videos => {
+        setRecentActivity([
+          { type: "watched", video: videos[0], date: "2024-03-15" },
+          { type: "favorited", video: videos[2], date: "2024-03-14" },
+          { type: "rated", video: videos[4], rating: 4, date: "2024-03-13" },
+          { type: "watched", video: videos[6], date: "2024-03-12" },
+        ]);
+      });
+    });
+  }, []);
 
   const handleEdit = () => {
     setEditData(userData);
