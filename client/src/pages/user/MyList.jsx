@@ -1,3 +1,4 @@
+// import { fetchTMDBVideos } from "../../libs/tmdb";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -15,7 +16,6 @@ import {
   MoreVertical,
   X
 } from "lucide-react";
-import { mockVideos } from "../../libs/mockVideos";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { VideoList } from "../../components/ui/user/VideoList";
 
@@ -27,15 +27,8 @@ export default function MyList() {
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-  // Mock user's favorite videos (in a real app, this would come from user data)
-  const [favorites, setFavorites] = useState([
-    mockVideos[0].id,
-    mockVideos[2].id,
-    mockVideos[4].id,
-    mockVideos[6].id,
-    mockVideos[8].id,
-    mockVideos[10].id
-  ]);
+  // User's favorite videos (should come from user data or API)
+  const [favorites, setFavorites] = useState([]);
 
   const [recentlyWatched, setRecentlyWatched] = useState([]);
 
@@ -49,7 +42,15 @@ export default function MyList() {
   ];
 
   // Get favorite videos
-  const favoriteVideos = mockVideos.filter(video => favorites.includes(video.id));
+  // Replace with API-fetched videos
+  const [videos, setVideos] = useState([]);
+  // Fetch videos from TMDB API (example: popular)
+  useEffect(() => {
+    import('../../libs/tmdb').then(({ fetchTMDBVideos }) => {
+      fetchTMDBVideos({}).then(setVideos);
+    });
+  }, []);
+  const favoriteVideos = videos.filter(video => favorites.includes(video.id));
 
   // Filter and sort videos
   const filteredVideos = favoriteVideos
