@@ -58,21 +58,7 @@ export function VideoModal({ video, isFavorite, onClose, onToggleFavorite }) {
                   <Star className="w-4 h-4 text-yellow-400" />
                   {video.rating}
                 </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    video.genre === "horror"
-                      ? "bg-red-600/30 text-red-300"
-                      : video.genre === "comedy"
-                        ? "bg-yellow-600/30 text-yellow-300"
-                        : video.genre === "sci-fi"
-                          ? "bg-blue-600/30 text-blue-300"
-                          : video.genre === "action"
-                            ? "bg-orange-600/30 text-orange-300"
-                            : "bg-purple-600/30 text-purple-300"
-                  }`}
-                >
-                  {video.genre.toUpperCase()}
-                </span>
+
               </div>
             </div>
           </div>

@@ -4,8 +4,6 @@ import {
   ArrowLeft,
   Search,
   Filter,
-  Grid,
-  List,
   Star,
   Clock,
   Eye,
@@ -16,23 +14,21 @@ import {
 } from "lucide-react";
 import { fetchTMDBVideos } from "../../libs/tmdb";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
-import { VideoList } from "../../components/ui/user/VideoList";
 
 export default function Browse() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGenres, setSelectedGenres] = useState([]);
+
   const [selectedYears, setSelectedYears] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [sortBy, setSortBy] = useState("title");
-  const [viewMode, setViewMode] = useState("grid");
+
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Available filter options
-  const genres = ["action", "comedy", "drama", "horror", "sci-fi"];
+
   const years = ["2024", "2023", "2022", "2021", "2020"];
   const ratings = ["9+", "8+", "7+", "6+"];
   const sortOptions = [
@@ -48,11 +44,11 @@ export default function Browse() {
 
   useEffect(() => {
     setLoading(true);
-    fetchTMDBVideos({ query: searchQuery, genre: selectedGenres[0] || '' })
+    fetchTMDBVideos({ query: searchQuery })
       .then(results => setVideos(results))
       .catch(() => setVideos([]))
       .finally(() => setLoading(false));
-  }, [searchQuery, selectedGenres]);
+  }, [searchQuery]);
 
   const filteredVideos = videos;
 
@@ -69,19 +65,12 @@ export default function Browse() {
   };
 
   const clearFilters = () => {
-    setSelectedGenres([]);
     setSelectedYears([]);
     setSelectedRatings([]);
     setSearchQuery("");
   };
 
-  const toggleGenre = (genre) => {
-    setSelectedGenres(prev => 
-      prev.includes(genre) 
-        ? prev.filter(g => g !== genre)
-        : [...prev, genre]
-    );
-  };
+
 
   const toggleYear = (year) => {
     setSelectedYears(prev => 
@@ -120,33 +109,21 @@ export default function Browse() {
       );
     }
 
-    if (viewMode === "grid") {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredVideos.map((video, index) => (
-            <div key={video.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <VideoCard
-                video={video}
-                isFavorite={favorites.includes(video.id)}
-                isRecentlyWatched={recentlyWatched.includes(video.id)}
-                onSelect={() => handleVideoSelect(video)}
-                onToggleFavorite={() => toggleFavorite(video.id)}
-                animationDelay={index * 0.1}
-              />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
     return (
-      <VideoList
-        videos={filteredVideos}
-        favorites={favorites}
-        recentlyWatched={recentlyWatched}
-        onVideoSelect={handleVideoSelect}
-        onToggleFavorite={toggleFavorite}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {filteredVideos.map((video, index) => (
+          <div key={video.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+            <VideoCard
+              video={video}
+              isFavorite={favorites.includes(video.id)}
+              isRecentlyWatched={recentlyWatched.includes(video.id)}
+              onSelect={() => handleVideoSelect(video)}
+              onToggleFavorite={() => toggleFavorite(video.id)}
+              animationDelay={index * 0.1}
+            />
+          </div>
+        ))}
+      </div>
     );
   };
 
@@ -178,28 +155,7 @@ export default function Browse() {
                 <SlidersHorizontal size={16} />
                 Filters
               </button>
-              <div className="flex items-center gap-1 bg-neutral-800 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === "grid" 
-                      ? "bg-blue-600 text-white" 
-                      : "text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  <Grid size={16} />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === "list" 
-                      ? "bg-blue-600 text-white" 
-                      : "text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  <List size={16} />
-                </button>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -242,25 +198,7 @@ export default function Browse() {
                   </select>
                 </div>
 
-                {/* Genres */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Genres</h3>
-                  <div className="space-y-2">
-                    {genres.map((genre) => (
-                      <label key={genre} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedGenres.includes(genre)}
-                          onChange={() => toggleGenre(genre)}
-                          className="w-4 h-4 text-blue-600 bg-neutral-800 border-neutral-700 rounded focus:ring-blue-500 focus:ring-2"
-                        />
-                        <span className="ml-2 text-sm text-neutral-300 capitalize">
-                          {genre}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+
 
                 {/* Years */}
                 <div>
@@ -303,7 +241,7 @@ export default function Browse() {
                 </div>
 
                 {/* Clear Filters */}
-                {(selectedGenres.length > 0 || selectedYears.length > 0 || selectedRatings.length > 0 || searchQuery) && (
+                {(selectedYears.length > 0 || selectedRatings.length > 0 || searchQuery) && (
                   <button
                     onClick={clearFilters}
                     className="w-full bg-neutral-800 hover:bg-neutral-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -324,10 +262,9 @@ export default function Browse() {
                 <h2 className="text-xl font-semibold">
                   {filteredVideos.length} {filteredVideos.length === 1 ? 'video' : 'videos'} found
                 </h2>
-                {(selectedGenres.length > 0 || selectedYears.length > 0 || selectedRatings.length > 0) && (
+                {(selectedYears.length > 0 || selectedRatings.length > 0) && (
                   <p className="text-sm text-neutral-400 mt-1">
                     Filtered by: {[
-                      ...selectedGenres.map(g => g.charAt(0).toUpperCase() + g.slice(1)),
                       ...selectedYears,
                       ...selectedRatings.map(r => `${r}+ stars`)
                     ].join(', ')}
