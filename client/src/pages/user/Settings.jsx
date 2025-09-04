@@ -1,25 +1,21 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft,
-  Bell,
-  Shield,
-  Palette,
-  Monitor,
-  Globe,
-  Download,
   Trash2,
   Save,
   Eye,
   EyeOff,
   Lock,
-  Mail,
   User,
-  Smartphone
+  LogOut
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("notifications");
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("account");
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -59,11 +55,9 @@ export default function Settings() {
   });
 
   const tabs = [
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "privacy", label: "Privacy & Security", icon: Shield },
-    { id: "appearance", label: "Appearance", icon: Palette },
     { id: "account", label: "Account", icon: User },
-    { id: "password", label: "Password", icon: Lock }
+    { id: "password", label: "Password", icon: Lock },
+    { id: "logout", label: "Logout", icon: LogOut }
   ];
 
   const handleSettingChange = (category, setting, value) => {
@@ -119,177 +113,7 @@ export default function Settings() {
     }
   };
 
-  const renderNotificationsTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Mail size={20} className="text-blue-400" />
-              <div>
-                <h4 className="font-medium">Email Notifications</h4>
-                <p className="text-sm text-neutral-400">Receive notifications via email</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.email}
-                onChange={(e) => handleSettingChange("notifications", "email", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone size={20} className="text-green-400" />
-              <div>
-                <h4 className="font-medium">Push Notifications</h4>
-                <p className="text-sm text-neutral-400">Receive push notifications on your device</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.push}
-                onChange={(e) => handleSettingChange("notifications", "push", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Bell size={20} className="text-yellow-400" />
-              <div>
-                <h4 className="font-medium">Recommendations</h4>
-                <p className="text-sm text-neutral-400">Get personalized video recommendations</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.recommendations}
-                onChange={(e) => handleSettingChange("notifications", "recommendations", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPrivacyTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Privacy Settings</h3>
-        <div className="space-y-4">
-          <div className="p-4 bg-neutral-800 rounded-lg">
-            <label className="block text-sm font-medium mb-2">Profile Visibility</label>
-            <select
-              value={settings.privacy.profileVisibility}
-              onChange={(e) => handleSettingChange("privacy", "profileVisibility", e.target.value)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="public">Public</option>
-              <option value="friends">Friends Only</option>
-              <option value="private">Private</option>
-            </select>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div>
-              <h4 className="font-medium">Show Watch History</h4>
-              <p className="text-sm text-neutral-400">Allow others to see what you've watched</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.privacy.showWatchHistory}
-                onChange={(e) => handleSettingChange("privacy", "showWatchHistory", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div>
-              <h4 className="font-medium">Show Favorites</h4>
-              <p className="text-sm text-neutral-400">Allow others to see your favorite videos</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.privacy.showFavorites}
-                onChange={(e) => handleSettingChange("privacy", "showFavorites", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderAppearanceTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Appearance Settings</h3>
-        <div className="space-y-4">
-          <div className="p-4 bg-neutral-800 rounded-lg">
-            <label className="block text-sm font-medium mb-2">Theme</label>
-            <select
-              value={settings.appearance.theme}
-              onChange={(e) => handleSettingChange("appearance", "theme", e.target.value)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="auto">Auto</option>
-            </select>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-            <div>
-              <h4 className="font-medium">Auto-play Videos</h4>
-              <p className="text-sm text-neutral-400">Automatically play videos when browsing</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.appearance.autoPlay}
-                onChange={(e) => handleSettingChange("appearance", "autoPlay", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="p-4 bg-neutral-800 rounded-lg">
-            <label className="block text-sm font-medium mb-2">Video Quality</label>
-            <select
-              value={settings.appearance.quality}
-              onChange={(e) => handleSettingChange("appearance", "quality", e.target.value)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="auto">Auto</option>
-              <option value="1080p">1080p</option>
-              <option value="720p">720p</option>
-              <option value="480p">480p</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Removed: Notifications, Privacy & Security, and Appearance tabs
 
   const renderAccountTab = () => (
     <div className="space-y-6">
@@ -337,6 +161,30 @@ export default function Settings() {
               Delete Account
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLogoutTab = () => (
+    <div className="space-y-6">
+      <div className="p-6 bg-neutral-800 rounded-lg border border-neutral-700">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><LogOut size={18} /> Logout</h3>
+        <p className="text-sm text-neutral-400 mb-6">Are you sure you want to sign out?</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => { logout(); navigate('/login'); }}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <LogOut size={16} />
+            Confirm Logout
+          </button>
+          <button
+            onClick={() => setActiveTab('account')}
+            className="bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -425,18 +273,14 @@ export default function Settings() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "notifications":
-        return renderNotificationsTab();
-      case "privacy":
-        return renderPrivacyTab();
-      case "appearance":
-        return renderAppearanceTab();
       case "account":
         return renderAccountTab();
       case "password":
         return renderPasswordTab();
+      case "logout":
+        return renderLogoutTab();
       default:
-        return renderNotificationsTab();
+        return renderAccountTab();
     }
   };
 
