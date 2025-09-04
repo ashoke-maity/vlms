@@ -1,38 +1,58 @@
 import { useState, useEffect } from "react";
 import Header from "../../components/ui/user/Header";
-
-
-
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { HeroSection } from "../../components/layouts/user/HeroSection";
 import { fetchTMDBVideos } from "../../libs/tmdb";
-import {
-  Sparkles,
-  TrendingUp,
-  Clock,
-  Heart,
-  Star,
-  Play,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
 
 export default function Home() {
-
   const [searchQuery, setSearchQuery] = useState("");
-
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Deduplicate by TMDB id
+  const uniqueById = (arr) => {
+    const map = new Map();
+    for (const item of arr || []) {
+      if (item && item.id != null && !map.has(item.id)) map.set(item.id, item);
+    }
+    return Array.from(map.values());
+  };
 
   useEffect(() => {
     setLoading(true);
-    fetchTMDBVideos({ query: searchQuery })
-      .then(results => setVideos(results))
-      .catch(() => setVideos([]))
+    setPage(1);
+    fetchTMDBVideos({ query: searchQuery, page: 1 })
+      .then(results => {
+        const list = results || [];
+        setVideos(uniqueById(list));
+        setHasMore(list.length === 20);
+      })
+      .catch(() => {
+        setVideos([]);
+        setHasMore(false);
+      })
       .finally(() => setLoading(false));
   }, [searchQuery]);
+
+  const loadMore = () => {
+    if (isLoadingMore || !hasMore) return;
+    const nextPage = page + 1;
+    setIsLoadingMore(true);
+    fetchTMDBVideos({ query: searchQuery, page: nextPage })
+      .then(results => {
+        const newResults = results || [];
+        setVideos(prev => uniqueById([...prev, ...newResults]));
+        setPage(nextPage);
+        setHasMore(newResults.length === 20);
+      })
+      .catch(() => setHasMore(false))
+      .finally(() => setIsLoadingMore(false));
+  };
 
   const filteredVideos = videos;
 
@@ -48,71 +68,7 @@ export default function Home() {
     setRecentlyWatched((prev) => [video.id, ...prev.filter((id) => id !== video.id)].slice(0, 5));
   };
 
-  const featuredVideos = videos.slice(0, 6);
-  const trendingVideos = videos.slice(0, 8);
-
-  const heroSlides = [
-    {
-      id: 1,
-      title: "AVATAR",
-      subtitle: "Enter the world of Pandora and discover a new dimension of storytelling",
-      genre: "Sci-Fi",
-      year: "2022",
-      rating: "9.2",
-      image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1400&h=800&fit=crop",
-      color: "from-cyan-600 to-blue-800"
-    },
-    {
-      id: 2,
-      title: "DUNE",
-      subtitle: "The spice must flow. A cinematic masterpiece of epic proportions",
-      genre: "Sci-Fi",
-      year: "2021",
-      rating: "8.9",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&h=800&fit=crop",
-      color: "from-amber-600 to-orange-800"
-    },
-    {
-      id: 3,
-      title: "BLADE RUNNER 2049",
-      subtitle: "The future is now. A visual and narrative masterpiece",
-      genre: "Sci-Fi",
-      year: "2017",
-      rating: "8.7",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1400&h=800&fit=crop",
-      color: "from-purple-600 to-pink-800"
-    },
-    {
-      id: 4,
-      title: "MAD MAX: FURY ROAD",
-      subtitle: "A high-octane thrill ride through the wasteland",
-      genre: "Action",
-      year: "2015",
-      rating: "8.8",
-      image: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1400&h=800&fit=crop",
-      color: "from-red-600 to-orange-700"
-    },
-    {
-      id: 5,
-      title: "INCEPTION",
-      subtitle: "Your mind is the scene of the crime. Dreams within dreams",
-      genre: "Sci-Fi",
-      year: "2010",
-      rating: "8.8",
-      image: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1400&h=800&fit=crop",
-      color: "from-indigo-600 to-purple-800"
-    },
-    {
-      id: 6,
-      title: "THE DARK KNIGHT",
-      subtitle: "Why so serious? The definitive superhero film",
-      genre: "Action",
-      year: "2008",
-      rating: "9.0",
-      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&h=800&fit=crop",
-      color: "from-gray-800 to-black"
-    }
-  ];
+  const heroSlides = [];
 
 
 
@@ -202,35 +158,38 @@ export default function Home() {
               </div>
             ) : (
               <div className="space-y-8">
-                {/* Results Summary */}
-                <div className="flex items-center justify-between mb-8 results-summary">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 glass-card">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                      <span className="text-sm font-medium text-white">
-                        {filteredVideos.length} videos found
-                      </span>
-                    </div>
-
-                  </div>
-
-                </div>
+                {/* Results Summary removed */}
 
                 {/* Enhanced Video Grid/List */}
                 <div className="relative video-grid">
                   {renderVideos(filteredVideos)}
                 </div>
 
-                {/* Enhanced Footer */}
-                <div className="mt-16 text-center">
-                  <div className="inline-flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-full px-8 py-4 border border-white/10">
-                    <span className="text-neutral-400">🎬</span>
-                    <span className="text-white font-medium">
-                      End of results • {filteredVideos.length} videos loaded
-                    </span>
-                    <span className="text-neutral-400">🎬</span>
+                {/* Load More */}
+                {hasMore && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      onClick={loadMore}
+                      disabled={isLoadingMore}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white px-6 py-2 rounded-lg transition-colors"
+                    >
+                      {isLoadingMore ? "Loading..." : "Load more"}
+                    </button>
                   </div>
-                </div>
+                )}
+
+                {/* Enhanced Footer */}
+                {!hasMore && (
+                  <div className="mt-16 text-center">
+                    <div className="inline-flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-full px-8 py-4 border border-white/10">
+                      <span className="text-neutral-400">🎬</span>
+                      <span className="text-white font-medium">
+                        End of results • {filteredVideos.length} videos loaded
+                      </span>
+                      <span className="text-neutral-400">🎬</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

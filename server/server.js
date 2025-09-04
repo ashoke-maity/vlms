@@ -2,6 +2,9 @@
 const dotenv = require('dotenv').config();
 const express = require('express');
 const { dbConnect }= require('./configs/db');
+const cors = require('cors');
+const { corsOptions } = require('./middlewares/cors.Middleware');
+
 
 const app = express();
 
@@ -11,8 +14,10 @@ dbConnect();
 // import routers
 const userRegisterRouter = require('./routes/user.Route');
 
+
 // middleware
 app.use(express.json());
+app.use(cors(corsOptions))
 
 // router use
 app.use(process.env.USER_ROUTES, userRegisterRouter);

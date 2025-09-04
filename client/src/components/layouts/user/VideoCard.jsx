@@ -19,6 +19,13 @@ export function VideoCard({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Build TMDB image URL if available
+  const tmdbBase = 'https://image.tmdb.org/t/p';
+  const posterSize = 'w500';
+  const fallbackColor = video?.coverColor || '#111827'; // neutral-900 fallback
+  const imagePath = video?.poster_path || video?.backdrop_path || video?.poster || video?.image || null;
+  const imageUrl = imagePath ? `${tmdbBase}/${posterSize}${imagePath}` : null;
+
   const handleCardClick = () => {
     onSelect();
   };
@@ -36,9 +43,19 @@ export function VideoCard({
         {/* Poster Container */}
         <div
           className="aspect-[2/3] relative overflow-hidden"
-          style={{ backgroundColor: video.coverColor }}
+          style={{ backgroundColor: fallbackColor }}
           onClick={handleCardClick}
         >
+          {/* Poster/Backdrop Image if available */}
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt={video?.title || video?.name || 'Poster'}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+          )}
+
           {/* Simple Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 

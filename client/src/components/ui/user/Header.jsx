@@ -1,31 +1,21 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import { User, LogOut } from "lucide-react";  
+import { User } from "lucide-react";  
 
-const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Browse", href: "/browse" },
-  { name: "My List", href: "/my-list" },
-  { name: "About", href: "/about" },
-];
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const isActiveLink = (href) => {
     return location.pathname === href;
   };
 
-  const handleLogout = () => {
-    logout();
-    setAvatarOpen(false);
-    navigate("/login");
-  };
+  // Logout moved to Settings → Logout
 
   const getUserInitials = () => {
     if (user?.user_metadata?.FirstName && user?.user_metadata?.LastName) {
@@ -45,24 +35,6 @@ const Header = () => {
           <img src="/vite.svg" alt="Logo" className="h-7 w-7" />
           <span className="hidden sm:inline">VLMS</span>
         </Link>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.href}
-              className={`transition-colors px-2 py-1 rounded ${
-                isActiveLink(link.href)
-                  ? "text-white bg-neutral-800"
-                  : "text-neutral-300 hover:text-white"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-
         {/* User Section */}
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
@@ -100,13 +72,7 @@ const Header = () => {
                   >
                     Settings
                   </Link>
-                  <button 
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 w-full px-4 py-2 hover:bg-neutral-800 transition-colors text-left"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
+                  {/* Logout action moved into Settings */}
                 </div>
               )}
             </div>
@@ -157,12 +123,7 @@ const Header = () => {
             <>
               <Link to="/profile" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Profile</Link>
               <Link to="/settings" className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded">Settings</Link>
-              <button 
-                onClick={handleLogout}
-                className="text-neutral-300 hover:text-white transition-colors px-2 py-2 rounded text-left w-full"
-              >
-                Logout
-              </button>
+              {/* Logout action moved into Settings */}
             </>
           ) : (
             <>

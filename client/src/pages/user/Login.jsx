@@ -53,8 +53,12 @@ export default function Login() {
     if (!validateForm()) return;
     
     try {
-      const result = await login(formData);
-      
+      // Send Email (capital E) to match backend
+      const result = await login({
+        Email: formData.email,
+        password: formData.password
+      });
+
       if (result.success) {
         navigate("/");
       } else {
