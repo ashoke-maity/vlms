@@ -4,6 +4,21 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Check } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Register() {
+  // Google signup handler
+  const handleGoogleSignup = async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
+    const supabaseKey = import.meta.env.VITE_TMDB_API_KEY;
+    const redirectTo = window.location.origin + "/";
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo }
+    });
+    if (error) {
+      setErrors({ general: error.message });
+    }
+  };
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -337,11 +352,12 @@ export default function Register() {
 
           {/* Social Registration */}
           <div className="space-y-3">
-            <button className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700">
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700"
+            >
               Continue with Google
-            </button>
-            <button className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700">
-              Continue with GitHub
             </button>
           </div>
 

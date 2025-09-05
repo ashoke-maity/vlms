@@ -12,15 +12,16 @@ import {
   X,
   SlidersHorizontal
 } from "lucide-react";
-import { fetchTMDBVideos } from "../../libs/tmdb";
+import { fetchTMDBVideos, fetchTMDBGenres } from "../../libs/tmdb";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 
 export default function Browse() {
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [selectedGenre, setSelectedGenre] = useState("all");
   const [selectedYears, setSelectedYears] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
-  const [sortBy, setSortBy] = useState("title");
+  const [sortBy, setSortBy] = useState("popularity");
+  const [genres, setGenres] = useState([]);
 
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -32,23 +33,69 @@ export default function Browse() {
   const years = ["2024", "2023", "2022", "2021", "2020"];
   const ratings = ["9+", "8+", "7+", "6+"];
   const sortOptions = [
+    { value: "popularity", label: "Most Popular" },
     { value: "title", label: "Title A-Z" },
-    { value: "title-desc", label: "Title Z-A" },
     { value: "year", label: "Year (Newest)" },
-    { value: "year-desc", label: "Year (Oldest)" },
     { value: "rating", label: "Rating (High)" },
-    { value: "rating-desc", label: "Rating (Low)" },
-    { value: "watchCount", label: "Most Watched" },
-    { value: "dateAdded", label: "Recently Added" }
+    { value: "vote_count", label: "Most Voted" }
   ];
 
+  // Load genres on mount
+  useEffect(() => {
+    fetchTMDBGenres()
+      .then(setGenres)
+      .catch(() => setGenres([]));
+  }, []);
+
+  // Load videos based on filters
   useEffect(() => {
     setLoading(true);
-    fetchTMDBVideos({ query: searchQuery })
-      .then(results => setVideos(results))
+    const genreId = selectedGenre !== 'all' ? selectedGenre : null;
+    
+    fetchTMDBVideos({ query: searchQuery, genre: genreId })
+      .then(results => {
+        let filteredResults = results || [];
+        
+        // Apply year filter
+        if (selectedYears.length > 0) {
+          filteredResults = filteredResults.filter(video => 
+            selectedYears.includes(String(video.year))
+          );
+        }
+        
+        // Apply rating filter
+        if (selectedRatings.length > 0) {
+          filteredResults = filteredResults.filter(video => {
+            const rating = parseFloat(video.rating);
+            return selectedRatings.some(minRating => {
+              const min = parseFloat(minRating.replace('+', ''));
+              return rating >= min;
+            });
+          });
+        }
+        
+        // Apply sorting
+        filteredResults.sort((a, b) => {
+          switch (sortBy) {
+            case 'title':
+              return a.title.localeCompare(b.title);
+            case 'year':
+              return (b.year || 0) - (a.year || 0);
+            case 'rating':
+              return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+            case 'vote_count':
+              return (b.vote_count || 0) - (a.vote_count || 0);
+            case 'popularity':
+            default:
+              return (b.popularity || 0) - (a.popularity || 0);
+          }
+        });
+        
+        setVideos(filteredResults);
+      })
       .catch(() => setVideos([]))
       .finally(() => setLoading(false));
-  }, [searchQuery]);
+  }, [searchQuery, selectedGenre, selectedYears, selectedRatings, sortBy]);
 
   const filteredVideos = videos;
 
@@ -180,6 +227,23 @@ export default function Browse() {
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+                </div>
+
+                {/* Genre */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Genre</h3>
+                  <select
+                    value={selectedGenre}
+                    onChange={(e) => setSelectedGenre(e.target.value)}
+                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Genres</option>
+                    {genres.map((genre) => (
+                      <option key={genre.id} value={genre.id}>
+                        {genre.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Sort */}

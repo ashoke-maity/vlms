@@ -18,8 +18,15 @@ const Header = () => {
   // Logout moved to Settings → Logout
 
   const getUserInitials = () => {
+    if (user?.name) {
+      // Google display name
+      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
     if (user?.user_metadata?.FirstName && user?.user_metadata?.LastName) {
       return `${user.user_metadata.FirstName[0]}${user.user_metadata.LastName[0]}`.toUpperCase();
+    }
+    if (user?.email) {
+      return user.email[0].toUpperCase();
     }
     if (user?.Email) {
       return user.Email[0].toUpperCase();
@@ -48,14 +55,14 @@ const Header = () => {
                   <span className="text-sm text-white font-bold">{getUserInitials()}</span>
                 </div>
                 <span className="hidden sm:block text-white text-sm">
-                  {user?.user_metadata?.FirstName || 'User'}
+                  {user?.name || user?.user_metadata?.FirstName || 'User'}
                 </span>
               </button>
               {avatarOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-neutral-900 text-white rounded-lg shadow-lg py-2 z-50 border border-neutral-700">
                   <div className="px-4 py-2 border-b border-neutral-700">
-                    <p className="text-sm font-medium">{user?.user_metadata?.FirstName} {user?.user_metadata?.LastName}</p>
-                    <p className="text-xs text-neutral-400">{user?.Email}</p>
+                    <p className="text-sm font-medium">{user?.name || `${user?.user_metadata?.FirstName || ''} ${user?.user_metadata?.LastName || ''}`.trim() || 'User'}</p>
+                    <p className="text-xs text-neutral-400">{user?.email || user?.Email}</p>
                   </div>
                   <Link 
                     to="/profile" 

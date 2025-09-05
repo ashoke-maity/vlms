@@ -73,6 +73,40 @@ class AuthService {
     }
   }
 
+  // Google login
+  async googleLogin(token) {
+    try {
+      console.log('🔗 Calling Google login API with token');
+      const response = await api.post(
+        `${import.meta.env.VITE_USER_URL}/google-login`,
+        { token }
+      );
+
+      console.log('📡 Google login API response:', response.data);
+
+      if (response.data.ok) {
+        // Store session data for Google login
+        if (response.data.session) {
+          localStorage.setItem("accessToken", response.data.session.access_token);
+          console.log('💾 Stored Google access token');
+        }
+        
+        // Store user data
+        if (response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          console.log('👤 Stored Google user data:', response.data.user);
+        }
+      } else {
+        console.log('❌ Google login API returned not ok:', response.data.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.log('🚨 Google login API error:', error);
+      throw this.handleError(error);
+    }
+  }
+
   // Logout user
   logout() {
     localStorage.removeItem("accessToken");
