@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import { User } from "lucide-react";  
+import { User } from "lucide-react"; 
 
 
 const Header = () => {
@@ -39,7 +39,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 text-xl font-semibold tracking-tight text-white">
-          <img src="/vite.svg" alt="Logo" className="h-7 w-7" />
+          <img src="./vlms_logo.png" alt="Logo" className="h-7 w-7" />
           <span className="hidden sm:inline">VLMS</span>
         </Link>
         {/* User Section */}

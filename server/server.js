@@ -23,10 +23,6 @@ app.use(cors(corsOptions));
 app.use(process.env.USER_ROUTES, userRegisterRouter);
 app.use('/vlms/play', playRouter);
 
-console.log('🔗 Routes registered:');
-console.log(`📁 User routes: ${process.env.USER_ROUTES}`);
-console.log('🎬 Play routes: /vlms/play');
-
 // server listen
 app.listen(process.env.PORT, ()=>{
     console.log(`The server is running on port : ${process.env.PORT}`);
