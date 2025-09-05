@@ -17,7 +17,7 @@ import {
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 
 
-export default function MyList() {
+export default function watchList() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [sortBy, setSortBy] = useState("dateAdded");
@@ -182,7 +182,7 @@ export default function MyList() {
               </Link>
               <div className="flex items-center gap-3">
                 <Heart size={24} className="text-red-400" />
-                <h1 className="text-2xl font-bold">My List</h1>
+                <h1 className="text-2xl font-bold">Watchlist</h1>
               </div>
             </div>
             

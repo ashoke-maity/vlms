@@ -87,6 +87,35 @@ class VideoService {
     }
   }
 
+  // Get video details for playing (including trailer info)
+  async getVideoForPlay(id) {
+    try {
+      console.log(`🎬 Fetching video details for play: ${id}`);
+      const response = await api.get(`/vlms/play/${id}`);
+      console.log('📡 Video play data:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('🚨 Error fetching video for play:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Get video stream URL
+  async getVideoStream(id, options = {}) {
+    try {
+      const { quality = '720p', type = 'trailer' } = options;
+      const params = new URLSearchParams({ quality, type });
+      
+      console.log(`🎥 Fetching stream for video: ${id}`);
+      const response = await api.get(`/vlms/play/${id}/stream?${params.toString()}`);
+      console.log('📡 Video stream data:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('🚨 Error fetching video stream:', error);
+      throw this.handleError(error);
+    }
+  }
+
   // Handle API errors
   handleError(error) {
     if (error.response) {

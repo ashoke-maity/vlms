@@ -12,6 +12,22 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { login, loading: isLoading } = useAuth();
+  // Google login handler
+  const handleGoogleLogin = async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
+    const supabaseKey = import.meta.env.VITE_TMDB_API_KEY;
+    const redirectTo = window.location.origin + "/";
+    // Use Supabase JS client for OAuth
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo }
+    });
+    if (error) {
+      setErrors({ general: error.message });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -187,11 +203,12 @@ export default function Login() {
 
           {/* Social Login */}
           <div className="space-y-3">
-            <button className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700"
+            >
               Continue with Google
-            </button>
-            <button className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700">
-              Continue with GitHub
             </button>
           </div>
 

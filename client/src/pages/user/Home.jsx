@@ -2,14 +2,18 @@ import { useState, useEffect } from "react";
 import Header from "../../components/ui/user/Header";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { HeroSection } from "../../components/layouts/user/HeroSection";
-import { fetchTMDBVideos } from "../../libs/tmdb";
+import { fetchTMDBVideos, fetchTrendingMovies, fetchTMDBGenres } from "../../libs/tmdb";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("all");
   const [favorites, setFavorites] = useState([]);
   const [recentlyWatched, setRecentlyWatched] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [heroMovies, setHeroMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -23,10 +27,40 @@ export default function Home() {
     return Array.from(map.values());
   };
 
+  // Load initial data
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Load genres
+        const genresData = await fetchTMDBGenres();
+        setGenres(genresData || []);
+
+        // Load trending movies for hero section
+        const trendingData = await fetchTrendingMovies();
+        
+        const validMovies = (trendingData || []).filter(movie => 
+          movie && movie.id && movie.title && (movie.backdrop_path || movie.poster_path)
+        );
+        
+        setHeroMovies(validMovies.slice(0, 5));
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+        setGenres([]);
+        setHeroMovies([]);
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Load videos based on search and genre
   useEffect(() => {
     setLoading(true);
     setPage(1);
-    fetchTMDBVideos({ query: searchQuery, page: 1 })
+    
+    const genreId = selectedGenre !== 'all' ? selectedGenre : null;
+    
+    fetchTMDBVideos({ query: searchQuery, page: 1, genre: genreId })
       .then(results => {
         const list = results || [];
         setVideos(uniqueById(list));
@@ -37,13 +71,15 @@ export default function Home() {
         setHasMore(false);
       })
       .finally(() => setLoading(false));
-  }, [searchQuery]);
+  }, [searchQuery, selectedGenre]);
 
   const loadMore = () => {
     if (isLoadingMore || !hasMore) return;
     const nextPage = page + 1;
+    const genreId = selectedGenre !== 'all' ? selectedGenre : null;
+    
     setIsLoadingMore(true);
-    fetchTMDBVideos({ query: searchQuery, page: nextPage })
+    fetchTMDBVideos({ query: searchQuery, page: nextPage, genre: genreId })
       .then(results => {
         const newResults = results || [];
         setVideos(prev => uniqueById([...prev, ...newResults]));
@@ -68,7 +104,24 @@ export default function Home() {
     setRecentlyWatched((prev) => [video.id, ...prev.filter((id) => id !== video.id)].slice(0, 5));
   };
 
-  const heroSlides = [];
+  // Create hero slides from trending movies
+  const heroSlides = heroMovies
+    .filter(movie => movie && movie.id && movie.title) // Filter out invalid movies
+    .map((movie, index) => ({
+      id: movie.id,
+      title: movie.title,
+      subtitle: movie.description || "Discover amazing content",
+      description: movie.description,
+      genre: movie.genre_ids?.[0] ? `Genre ID: ${movie.genre_ids[0]}` : "Movie",
+      year: movie.year,
+      rating: movie.rating,
+      image: movie.backdrop_path 
+        ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+        : movie.poster_path 
+        ? `https://image.tmdb.org/t/p/w1280${movie.poster_path}`
+        : null,
+      color: `from-${['blue', 'purple', 'red', 'green', 'yellow'][index % 5]}-600 to-${['purple', 'pink', 'orange', 'blue', 'red'][index % 5]}-800`
+    }));
 
 
 
@@ -124,8 +177,28 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Genre Selector */}
+              <select
+                value={selectedGenre}
+                onChange={(e) => setSelectedGenre(e.target.value)}
+                className="bg-neutral-800 text-white border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Genres</option>
+                {genres.map(genre => (
+                  <option key={genre.id} value={genre.id}>
+                    {genre.name}
+                  </option>
+                ))}
+              </select>
 
-
+              {/* Search Input */}
+              <input
+                type="text"
+                placeholder="Search movies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-neutral-800 text-white border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+              />
             </div>
           </div>
         </div>
