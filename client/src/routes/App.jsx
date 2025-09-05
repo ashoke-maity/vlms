@@ -6,7 +6,7 @@ import Login from '../pages/user/Login';
 import Register from '../pages/user/Register';
 import Profile from '../pages/user/Profile';
 import Settings from '../pages/user/Settings';
-import MyList from '../pages/user/MyList';
+import Watchlist from '../pages/user/Watchlist';
 
 export default function App() {
   return (
@@ -18,7 +18,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/watchlist" element={<MyList />} />
+          <Route path="/watchlist" element={<Watchlist />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
