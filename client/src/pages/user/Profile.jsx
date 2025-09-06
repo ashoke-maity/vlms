@@ -12,7 +12,7 @@ import {
   Settings,
   ArrowLeft
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { fetchTMDBVideos } from "../../libs/tmdb";
 

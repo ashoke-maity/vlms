@@ -1,24 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Check } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function Register() {
-  // Google signup handler
-  const handleGoogleSignup = async () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
-    const supabaseKey = import.meta.env.VITE_TMDB_API_KEY;
-    const redirectTo = window.location.origin + "/";
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo }
-    });
-    if (error) {
-      setErrors({ general: error.message });
-    }
-  };
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -343,23 +328,7 @@ export default function Register() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-neutral-700"></div>
-            <span className="px-4 text-sm text-neutral-500">or</span>
-            <div className="flex-1 border-t border-neutral-700"></div>
-          </div>
-
-          {/* Social Registration */}
-          <div className="space-y-3">
-            <button
-              type="button"
-              onClick={handleGoogleSignup}
-              className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-lg transition-colors border border-neutral-700"
-            >
-              Continue with Google
-            </button>
-          </div>
+          {/* ...existing code... */}
 
           {/* Sign In Link */}
           <div className="mt-8 text-center">
