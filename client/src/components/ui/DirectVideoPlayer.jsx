@@ -1,20 +1,52 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 export default function DirectVideoPlayer({ videoData, onClose }) {
   console.log('🎬 DirectVideoPlayer received data:', videoData);
 
+  // Handle keyboard events
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [onClose]);
+
   if (!videoData?.trailer?.key) {
     return (
       <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 max-w-md text-center">
-          <h3 className="text-xl font-bold mb-4 text-black">No Trailer Available</h3>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-8 max-w-md text-center">
+          <h3 className="text-xl font-bold mb-4 text-white">No Trailer Available</h3>
+          <p className="text-neutral-300 mb-6">
             Sorry, no trailer is available for "{videoData?.title || 'this movie'}".
           </p>
+          {videoData?.all_videos && videoData.all_videos.length > 0 && (
+            <div className="mb-6">
+              <p className="text-neutral-400 text-sm mb-3">Available videos:</p>
+              <div className="space-y-2">
+                {videoData.all_videos.slice(0, 3).map((video, index) => (
+                  <a
+                    key={index}
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block bg-neutral-800 hover:bg-neutral-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                  >
+                    {video.name} ({video.type})
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             onClick={onClose}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition-colors"
           >
             Close
           </button>

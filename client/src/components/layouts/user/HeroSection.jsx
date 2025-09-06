@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Play, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Heart, Loader2 } from "lucide-react";
+import DirectVideoPlayer from "../../ui/DirectVideoPlayer";
+import videoService from "../../../services/video";
 
 export const HeroSection = ({ slides = [] }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [videoData, setVideoData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Ensure currentSlide is within bounds
   useEffect(() => {
@@ -41,6 +46,50 @@ export const HeroSection = ({ slides = [] }) => {
     setIsTransitioning(true);
     setCurrentSlide(index);
     setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const handleWatchNow = async () => {
+    if (loading || !currentSlideData) return;
+    
+    try {
+      setLoading(true);
+      console.log(`🎬 Loading video for hero: ${currentSlideData.title} (ID: ${currentSlideData.id})`);
+      console.log('🔍 Hero slide data:', currentSlideData);
+      console.log('🆔 Hero video ID type:', typeof currentSlideData.id, currentSlideData.id);
+      
+      if (!currentSlideData.id) {
+        throw new Error('No video ID available for hero slide');
+      }
+      
+      const response = await videoService.getVideoForPlay(currentSlideData.id);
+      console.log('📡 Hero API Response:', response);
+      
+      if (response && response.ok) {
+        console.log('🎞️ Hero video data received:', response.data);
+        setVideoData(response.data);
+        setShowPlayer(true);
+        console.log(`✅ Hero video loaded successfully: ${currentSlideData.title}`);
+      } else {
+        console.error('❌ Failed to load hero video:', response);
+        console.log('🔍 Hero response details:', {
+          ok: response?.ok,
+          message: response?.message,
+          status: response?.status,
+          data: response?.data
+        });
+        alert(`Sorry, we couldn't load the trailer for "${currentSlideData.title}". Error: ${response?.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('🚨 Error loading hero video:', error);
+      console.log('🔍 Hero error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      alert(`Error loading video: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Show fallback UI if no slides
@@ -122,9 +171,17 @@ export const HeroSection = ({ slides = [] }) => {
             
             {/* Action Buttons */}
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-3 bg-white text-black font-semibold px-8 py-3 rounded-lg hover:bg-white/90 transition-colors">
-                <Play className="w-5 h-5" />
-                Watch Now
+              <button 
+                onClick={handleWatchNow}
+                disabled={loading}
+                className="flex items-center gap-3 bg-white text-black font-semibold px-8 py-3 rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Play className="w-5 h-5" />
+                )}
+                {loading ? 'Loading...' : 'Watch Now'}
               </button>
               <button className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-3 rounded-lg hover:bg-white/20 transition-colors">
                 <Heart className="w-5 h-5" />
@@ -184,6 +241,17 @@ export const HeroSection = ({ slides = [] }) => {
             }}
           />
         </div>
+      )}
+      
+      {/* Video Player Modal */}
+      {showPlayer && videoData && (
+        <DirectVideoPlayer
+          videoData={videoData}
+          onClose={() => {
+            setShowPlayer(false);
+            setVideoData(null);
+          }}
+        />
       )}
     </section>
   );

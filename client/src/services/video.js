@@ -91,11 +91,21 @@ class VideoService {
   async getVideoForPlay(id) {
     try {
       console.log(`🎬 Fetching video details for play: ${id}`);
+      console.log(`🔗 API Base URL: ${api.defaults.baseURL}`);
+      console.log(`🎯 Full URL: ${api.defaults.baseURL}/vlms/play/${id}`);
+      
       const response = await api.get(`/vlms/play/${id}`);
-      console.log('📡 Video play data:', response.data);
+      console.log('📡 Video play response:', response);
+      console.log('📦 Video play data:', response.data);
       return response.data;
     } catch (error) {
       console.error('🚨 Error fetching video for play:', error);
+      console.error('🚨 Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       throw this.handleError(error);
     }
   }

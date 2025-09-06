@@ -7,6 +7,7 @@ import Register from '../pages/user/Register';
 import Profile from '../pages/user/Profile';
 import Settings from '../pages/user/Settings';
 import Watchlist from '../pages/user/Watchlist';
+import VideoDetail from '../pages/user/VideoDetail';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/video/:id" element={<VideoDetail />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

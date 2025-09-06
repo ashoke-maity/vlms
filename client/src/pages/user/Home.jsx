@@ -139,18 +139,14 @@ export default function Home() {
               animation: `fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s both`
             }}
           >
-            <div className="relative">
-              <VideoCard
-                video={video}
-                isFavorite={favorites.includes(video.id)}
-                isRecentlyWatched={recentlyWatched.includes(video.id)}
-                onSelect={() => handleVideoSelect(video)}
-                onToggleFavorite={() => toggleFavorite(video.id)}
-                animationDelay={index * 0.1}
-              />
-              {/* Enhanced hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-            </div>
+            <VideoCard
+              video={video}
+              isFavorite={favorites.includes(video.id)}
+              isRecentlyWatched={recentlyWatched.includes(video.id)}
+              onSelect={() => handleVideoSelect(video)}
+              onToggleFavorite={() => toggleFavorite(video.id)}
+              animationDelay={index * 0.1}
+            />
           </div>
         ))}
       </div>
