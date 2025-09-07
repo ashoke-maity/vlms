@@ -3,9 +3,7 @@ import {
   Play,
   Heart,
   Star,
-  Clock,
   Eye,
-  MoreVertical,
   Loader2,
 } from "lucide-react";
 import DirectVideoPlayer from "../../ui/DirectVideoPlayer";
@@ -18,7 +16,6 @@ export function VideoCard({
   onSelect,
   onToggleFavorite,
   animationDelay = 0,
-  variant = "default",
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
@@ -32,35 +29,59 @@ export function VideoCard({
   const imagePath = video?.poster_path || video?.backdrop_path || video?.poster || video?.image || null;
   const imageUrl = imagePath ? `${tmdbBase}/${posterSize}${imagePath}` : null;
 
-  const handleCardClick = async () => {
+  const handleCardClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('🖱️ Card clicked!', video.title); // Simple click test
+    
     if (loading) return;
     
-    onSelect();
+    if (onSelect) onSelect();
     
     try {
       setLoading(true);
+      console.log(`🎬 Loading video for: ${video.title} (ID: ${video.id})`);
+      console.log('🔍 Full video object:', video);
+      console.log('🆔 Video ID type:', typeof video.id, video.id);
+      
+      // Ensure we have a valid ID
+      if (!video.id) {
+        throw new Error('No video ID available');
+      }
+      
       const response = await videoService.getVideoForPlay(video.id);
+      console.log('📡 API Response:', response);
       
       if (response && response.ok) {
+        console.log('🎞️ Video data received:', response.data);
         setVideoData(response.data);
         setShowPlayer(true);
+        console.log(`✅ Video loaded successfully: ${video.title}`);
       } else {
-        console.error('Failed to load video:', response?.message || 'Unknown error');
-        // Show a more user-friendly error message
-        alert(`Sorry, we couldn't load the trailer for "${video.title}". Please try again.`);
+        console.error('❌ Failed to load video:', response);
+        console.log('🔍 Response details:', {
+          ok: response?.ok,
+          message: response?.message,
+          status: response?.status,
+          data: response?.data
+        });
+        alert(`Sorry, we couldn't load the trailer for "${video.title}". Error: ${response?.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Video API error:', error);
-      alert(`Unable to play "${video.title}" right now. Please check your connection and try again.`);
+      console.error('🚨 Error loading video:', error);
+      console.log('🔍 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      alert(`Error loading video: ${error.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClosePlayer = () => {
-    setShowPlayer(false);
-    setVideoData(null);
-  };
+  // ...existing code...
 
   return (
     <div
@@ -70,13 +91,15 @@ export function VideoCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Main Card Container */}
-      <div className="relative bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800 hover:border-neutral-700 transition-all duration-300 cursor-pointer">
+      <div 
+        className={`relative bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800 hover:border-neutral-700 transition-all duration-300 cursor-pointer ${loading ? 'opacity-75' : ''}`}
+        onClick={handleCardClick}
+      >
         
         {/* Poster Container */}
         <div
           className="aspect-[2/3] relative overflow-hidden"
           style={{ backgroundColor: fallbackColor }}
-          onClick={handleCardClick}
         >
           {/* Poster/Backdrop Image if available */}
           {imageUrl && (
@@ -93,10 +116,10 @@ export function VideoCard({
 
           {/* Play Button */}
           <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-            isHovered || loading ? "bg-black/20" : "bg-transparent"
+            isHovered ? "bg-black/20" : "bg-transparent"
           }`}>
             <div className={`w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isHovered || loading ? "scale-100 opacity-100" : "scale-90 opacity-0"
+              isHovered ? "scale-100 opacity-100" : "scale-90 opacity-0"
             }`}>
               {loading ? (
                 <Loader2 className="w-5 h-5 text-black animate-spin" />
@@ -170,9 +193,12 @@ export function VideoCard({
       
       {/* Video Player Modal */}
       {showPlayer && videoData && (
-        <DirectVideoPlayer 
+        <DirectVideoPlayer
           videoData={videoData}
-          onClose={handleClosePlayer}
+          onClose={() => {
+            setShowPlayer(false);
+            setVideoData(null);
+          }}
         />
       )}
     </div>
