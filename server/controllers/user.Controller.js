@@ -174,241 +174,59 @@ function extractGoogleUserData(user) {
   };
 }
 
-// google login api
-exports.googleLogin = async (req, res) => {
+// user edit profile
+exports.editProfile = async (req, res) => {
   try {
-    console.log('🔍 Google login request received:', { hasToken: !!req.body.token });
-    
     const supabase = getSupabase();
-    const { token, userData } = req.body;
-
-    if (!token) {
-      console.log('❌ No token provided in request');
-      return sendError(res, 400, "Token is required");
-    }
-
-    console.log('🔑 Attempting to get user from Supabase with token');
-    // Get user from Supabase auth using the token
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error) {
-      console.log('❌ Error getting user from Supabase:', error);
-      return sendError(res, 401, "Invalid token", error.message || error);
-    }
-
-    if (!user) {
-      console.log('❌ No user found for token');
-      return sendError(res, 404, "User not found");
-    }
-
-    console.log('✅ User found from Supabase auth:', {
-      id: user.id,
-      email: user.email,
-      hasMetadata: !!user.user_metadata,
-      hasIdentities: !!(user.identities && user.identities.length > 0)
-    });
-
-    // Extract user data from Google OAuth
-    const extractedData = extractGoogleUserData(user);
-    console.log('📊 Extracted user data:', extractedData);
-    
-    // Check if user exists in our custom 'users' table
-    console.log('📎 Checking if user exists in custom users table...');
-    let { data: existingUser, error: selectError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    console.log('📎 Database query result:', {
-      foundUser: !!existingUser,
-      errorCode: selectError?.code,
-      errorMessage: selectError?.message
-    });
-
-    if (selectError && selectError.code !== 'PGRST116') { // PGRST116 = 'Not a single row was returned'
-      console.log('❌ Database error checking for user:', selectError);
-      return sendError(res, 500, "Error checking for user", selectError.message);
-    }
-
-    // If user doesn't exist, create them
-    if (!existingUser) {
-      console.log('✨ Creating new user in database...');
-      const userDataToInsert = {
-        id: extractedData.id,
-        Email: extractedData.email,
-        FirstName: extractedData.firstName || '',
-        LastName: extractedData.lastName || '',
-        avatar_url: extractedData.avatar_url,
-        provider: extractedData.provider,
-        email_verified: extractedData.verified,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('📝 User data to insert:', userDataToInsert);
-
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .insert([userDataToInsert])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error("Error creating Google user:", insertError);
-        return sendError(res, 500, "Error creating user", insertError.message);
-      }
-      existingUser = newUser;
-      
-      console.log(`New Google user created: ${extractedData.email}`);
-    } else {
-      // Update existing user's information if needed
-      const updates = {
-        updated_at: new Date().toISOString()
-      };
-      
-      // Update avatar if it's new
-      if (extractedData.avatar_url && extractedData.avatar_url !== existingUser.avatar_url) {
-        updates.avatar_url = extractedData.avatar_url;
-      }
-      
-      // Update name if it was empty before
-      if (!existingUser.FirstName && extractedData.firstName) {
-        updates.FirstName = extractedData.firstName;
-      }
-      if (!existingUser.LastName && extractedData.lastName) {
-        updates.LastName = extractedData.lastName;
-      }
-      
-      // Only update if there are changes
-      if (Object.keys(updates).length > 1) { // more than just updated_at
-        const { data: updatedUser, error: updateError } = await supabase
-          .from('users')
-          .update(updates)
-          .eq('id', user.id)
-          .select()
-          .single();
-          
-        if (updateError) {
-          console.error("Error updating Google user:", updateError);
-        } else {
-          existingUser = updatedUser;
-          console.log(`Google user updated: ${extractedData.email}`);
-        }
-      }
-    }
-
-    return res.status(200).json({
-      ok: true,
-      message: "Google login successful",
-      user: {
-        id: existingUser.id,
-        Email: existingUser.Email,
-        FirstName: existingUser.FirstName,
-        LastName: existingUser.LastName,
-        avatar_url: existingUser.avatar_url,
-        provider: existingUser.provider || 'google',
-        email_verified: existingUser.email_verified,
-        created_at: existingUser.created_at,
-        updated_at: existingUser.updated_at
-      },
-      session: {
-        access_token: token,
-        user_id: user.id,
-        expires_at: user.expires_at
-      }
-    });
-
+    const userId = req.user.id;
+    const { FirstName, LastName, AvatarUrl } = req.body;
+    console.log(req.body);
+    console.log(userId);
   } catch (err) {
-    console.error("google login error:", err);
-    return sendError(res, 500, "Server error during Google login");
+    console.error(err);
+    return sendError(res, 500, "Server error while updating profile");
   }
 };
 
-// google signup api (for explicit signup flow)
-exports.googleSignup = async (req, res) => {
+// user delete account
+exports.deleteAccount = async (req, res) => {
   try {
     const supabase = getSupabase();
-    const { token, additionalData } = req.body;
-
-    if (!token) {
-      return sendError(res, 400, "Token is required");
+    const userId = req.user.id;
+    console.log(userId);
+    return res.json({ ok: true, message: "Account deleted successfully" });
+  }
+    catch (err) {
+      console.error(err);
+      return sendError(res, 500, "Server error while deleting account");
     }
+};
 
-    // Get user from Supabase auth using the token
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+// user change password
+exports.changePassword = async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const userId = req.user.id;
+    const { OldPassword, NewPassword } = req.body;
+    console.log(userId);
+    return res.json({ ok: true, message: "Password changed successfully" });
+  }
+  catch (err) {
+    console.error(err);
+    return sendError(res, 500, "Server error while changing password");
+  }
+};
 
-    if (error) {
-      return sendError(res, 401, "Invalid token", error.message || error);
-    }
-
-    if (!user) {
-      return sendError(res, 404, "User not found");
-    }
-
-    // Check if user already exists
-    const { data: existingUser, error: selectError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (existingUser) {
-      return res.status(200).json({
-        ok: true,
-        message: "User already exists",
-        user: existingUser,
-        isNewUser: false
-      });
-    }
-
-    if (selectError && selectError.code !== 'PGRST116') {
-      return sendError(res, 500, "Error checking for user", selectError.message);
-    }
-
-    // Extract user data from Google OAuth
-    const extractedData = extractGoogleUserData(user);
-    
-    // Merge with additional data if provided
-    const finalData = {
-      id: extractedData.id,
-      Email: extractedData.email,
-      FirstName: additionalData?.firstName || extractedData.firstName || '',
-      LastName: additionalData?.lastName || extractedData.lastName || '',
-      avatar_url: extractedData.avatar_url,
-      provider: extractedData.provider,
-      email_verified: extractedData.verified,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    const { data: newUser, error: insertError } = await supabase
-      .from('users')
-      .insert([finalData])
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error("Error creating Google user during signup:", insertError);
-      return sendError(res, 500, "Error creating user", insertError.message);
-    }
-
-    console.log(`New Google user signed up: ${extractedData.email}`);
-
-    return res.status(201).json({
-      ok: true,
-      message: "Google signup successful",
-      user: newUser,
-      isNewUser: true,
-      session: {
-        access_token: token,
-        user_id: user.id,
-        expires_at: user.expires_at
-      }
-    });
-
-  } catch (err) {
-    console.error("google signup error:", err);
-    return sendError(res, 500, "Server error during Google signup");
+// user logout
+exports.logout = async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const userId = req.user.id;
+    console.log(userId);
+    return res.json({ ok: true, message: "Logout successful" });
+  }
+  catch (err) {
+    console.error(err);
+    return sendError(res, 500, "Server error while logging out");
   }
 };
