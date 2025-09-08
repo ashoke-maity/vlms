@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, googleLogin, googleSignup} = require('../controllers/user.Controller');
+const {register, login, editProfile, deleteAccount, changePassword, logout} = require('../controllers/user.Controller');
 
-// Standard authentication routes
+// login
 router.post('/login', login);
+
+// register
 router.post('/register', register);
 
-// Google OAuth routes
-router.post('/google-login', googleLogin);
-router.post('/google-signup', googleSignup);
+// edit profile
+router.put('/edit-profile/:id', editProfile);
+
+// delete profile
+router.delete('/delete-profile/:id', deleteAccount);
+
+// change password
+router.patch('/change-password/:id', changePassword);
+
+// logout
+router.get('/logout', logout);
 
 module.exports = router;
