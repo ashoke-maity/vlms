@@ -14,6 +14,7 @@ dbConnect();
 // import routers
 const userRegisterRouter = require('./routes/user.Route');
 const playRouter = require('./routes/play.Route');
+const adminRouter = require('./routes/admin.Route');
 
 // middleware
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use(cors(corsOptions));
 // router use
 app.use(process.env.USER_ROUTES, userRegisterRouter);
 app.use('/vlms/play', playRouter);
+// app.use(process.env.ADMIN_ROUTES, userRegisterRouter);
 
 // server listen
 app.listen(process.env.PORT, ()=>{

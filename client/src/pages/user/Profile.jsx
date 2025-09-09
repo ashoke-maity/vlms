@@ -6,9 +6,6 @@ import {
   Edit3, 
   Save, 
   X, 
-  Camera, 
-  Eye, 
-  Heart, 
   Settings,
   ArrowLeft
 } from "lucide-react";
@@ -79,7 +76,10 @@ export default function Profile() {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setUserData(editData);
+      setUserData(prev => ({
+        ...prev,
+        bio: editData.bio,
+      }));
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -147,33 +147,10 @@ export default function Profile() {
                       initials
                     )}
                   </div>
-                  {isEditing && (
-                    <button className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 p-2 rounded-full transition-colors">
-                      <Camera size={16} />
-                    </button>
-                  )}
+                  {/* Avatar upload/edit disabled */}
                 </div>
                 <h2 className="text-xl font-semibold">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
-                      className="bg-neutral-800 border border-neutral-700 rounded px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    userData.firstName || ""
-                  )}{" "}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
-                      className="bg-neutral-800 border border-neutral-700 rounded px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    userData.lastName || ""
-                  )}
+                  {userData.firstName || ""} {userData.lastName || ""}
                 </h2>
                 <p className="text-neutral-400 text-sm">
                   Member since {userData.joinDate ? new Date(userData.joinDate).toLocaleDateString() : ""}
@@ -185,16 +162,7 @@ export default function Profile() {
                 <div className="flex items-center gap-3">
                   <Mail size={16} className="text-neutral-500" />
                   <span className="text-sm text-neutral-300">
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={editData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    ) : (
-                      userData.email || ""
-                    )}
+                    {userData.email || ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
