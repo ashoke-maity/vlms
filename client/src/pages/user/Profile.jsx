@@ -24,7 +24,6 @@ export default function Profile() {
     email: "",
     joinDate: new Date().toISOString(),
     avatar: "",
-    bio: "",
   });
   const [editData, setEditData] = useState(userData);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,8 +44,7 @@ export default function Profile() {
         lastName: user.LastName || user.lastName || "",
         email: user.Email || user.email || "",
         joinDate: user.created_at || user.joinDate || new Date().toISOString(),
-        avatar: user.avatar || "",
-        bio: user.bio || "",
+        avatar: user.avatar || ""
       };
       setUserData(normalized);
       setEditData(normalized);
@@ -70,22 +68,6 @@ export default function Profile() {
   const handleCancel = () => {
     setEditData(userData);
     setIsEditing(false);
-  };
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUserData(prev => ({
-        ...prev,
-        bio: editData.bio,
-      }));
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleInputChange = (field, value) => {
@@ -172,62 +154,9 @@ export default function Profile() {
                   </span>
                 </div>
               </div>
-
-              {/* Bio */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-neutral-300 mb-2">Bio</h3>
-                {isEditing ? (
-                  <textarea
-                    value={editData.bio}
-                    onChange={(e) => handleInputChange("bio", e.target.value)}
-                    rows={3}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                ) : (
-                  <p className="text-sm text-neutral-400">{userData.bio || ""}</p>
-                )}
-              </div>
-
-
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                {isEditing ? (
-                  <>
-                    <button
-                      onClick={handleSave}
-                      disabled={isLoading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Save size={16} />
-                      {isLoading ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      onClick={handleCancel}
-                      className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={handleEdit}
-                    className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Edit3 size={16} />
-                    Edit Profile
-                  </button>
-                )}
-                <Link
-                  to="/settings"
-                  className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors"
-                >
-                  <Settings size={16} />
-                </Link>
-              </div>
             </div>
           </div>
-
+          
           {/* Main Content: Watchlist */}
             <div className="bg-neutral-900 rounded-lg p-6 border border-neutral-800">
               <div className="flex items-center justify-between mb-4">

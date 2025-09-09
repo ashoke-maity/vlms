@@ -134,72 +134,33 @@ exports.login = async (req, res) => {
   }
 };
 
-// Extract user data from Google OAuth user object
-function extractGoogleUserData(user) {
-  const metadata = user.user_metadata || {};
-  const identities = user.identities || [];
-  const googleIdentity = identities.find(identity => identity.provider === 'google');
-  const googleData = googleIdentity?.identity_data || {};
-  
-  // Try to get name from various sources
-  let firstName = '';
-  let lastName = '';
-  
-  // Priority order: identity_data > user_metadata > fallback parsing
-  if (googleData.given_name && googleData.family_name) {
-    firstName = googleData.given_name;
-    lastName = googleData.family_name;
-  } else if (googleData.name) {
-    const nameParts = googleData.name.split(' ');
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
-  } else if (metadata.full_name) {
-    const nameParts = metadata.full_name.split(' ');
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
-  } else if (metadata.name) {
-    const nameParts = metadata.name.split(' ');
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
-  }
-  
-  return {
-    id: user.id,
-    email: user.email,
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    avatar_url: googleData.picture || metadata.picture || metadata.avatar_url || null,
-    provider: 'google',
-    verified: user.email_confirmed_at ? true : false
-  };
-}
-
-// user edit profile
-exports.editProfile = async (req, res) => {
-  try {
-    const supabase = getSupabase();
-    const userId = req.user.id;
-    const { FirstName, LastName, AvatarUrl } = req.body;
-    console.log(req.body);
-    console.log(userId);
-  } catch (err) {
-    console.error(err);
-    return sendError(res, 500, "Server error while updating profile");
-  }
-};
-
 // user delete account
 exports.deleteAccount = async (req, res) => {
   try {
     const supabase = getSupabase();
-    const userId = req.user.id;
-    console.log(userId);
-    return res.json({ ok: true, message: "Account deleted successfully" });
-  }
-    catch (err) {
-      console.error(err);
-      return sendError(res, 500, "Server error while deleting account");
+    const userId = req.params.id;
+    if (!userId) {
+      return sendError(res, 400, "User ID is required");
     }
+
+    // Delete from custom users table
+    const { error: dbError } = await supabase
+      .from("users")
+      .delete()
+      .eq("id", userId);
+
+    if (dbError) {
+      return sendError(res, 500, "Error deleting user from database", dbError.message || dbError);
+    }
+
+    // If you want to delete from Supabase Auth, uncomment below (requires admin access):
+    // await supabase.auth.admin.deleteUser(userId);
+
+    return res.json({ ok: true, message: "Account deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return sendError(res, 500, "Server error while deleting account");
+  }
 };
 
 // user change password

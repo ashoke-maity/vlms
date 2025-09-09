@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft,
@@ -14,7 +15,39 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const handleDeleteAccount = async () => {
+    if (!user?.id) {
+      alert("User not found.");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await axios.delete(
+        `${import.meta.env.VITE_USER_URL}/delete-profile/${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.session?.access_token || ""}`,
+          },
+        }
+      );
+      if (res.data.ok) {
+        alert("Account deleted successfully.");
+        logout();
+        navigate("/login");
+      } else {
+        alert(res.data.message || "Failed to delete account.");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("Error deleting account.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const [activeTab, setActiveTab] = useState("account");
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -42,8 +75,6 @@ export default function Settings() {
       quality: "auto"
     },
     account: {
-      language: "en",
-      timezone: "UTC",
       dateFormat: "MM/DD/YYYY"
     }
   });
@@ -120,33 +151,6 @@ export default function Settings() {
       <div>
         <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
         <div className="space-y-4">
-          <div className="p-4 bg-neutral-800 rounded-lg">
-            <label className="block text-sm font-medium mb-2">Language</label>
-            <select
-              value={settings.account.language}
-              onChange={(e) => handleSettingChange("account", "language", e.target.value)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-            </select>
-          </div>
-
-          <div className="p-4 bg-neutral-800 rounded-lg">
-            <label className="block text-sm font-medium mb-2">Timezone</label>
-            <select
-              value={settings.account.timezone}
-              onChange={(e) => handleSettingChange("account", "timezone", e.target.value)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="UTC">UTC</option>
-              <option value="EST">Eastern Time</option>
-              <option value="PST">Pacific Time</option>
-              <option value="GMT">GMT</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -158,19 +162,7 @@ export default function Settings() {
             <p className="text-sm text-neutral-400 mb-4">This action cannot be undone. All your data will be permanently deleted.</p>
             <button
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-              onClick={async () => {
-                setIsLoading(true);
-                try {
-                  // TODO: Implement actual delete API call
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  // After deletion, redirect to settings (or login if logged out)
-                  navigate('/settings');
-                } catch (error) {
-                  console.error('Error deleting account:', error);
-                } finally {
-                  setIsLoading(false);
-                }
-              }}
+              onClick={handleDeleteAccount}
               disabled={isLoading}
             >
               <Trash2 size={16} />
