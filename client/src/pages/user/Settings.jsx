@@ -156,9 +156,25 @@ export default function Settings() {
           <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <h4 className="font-medium text-red-400 mb-2">Delete Account</h4>
             <p className="text-sm text-neutral-400 mb-4">This action cannot be undone. All your data will be permanently deleted.</p>
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+            <button
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              onClick={async () => {
+                setIsLoading(true);
+                try {
+                  // TODO: Implement actual delete API call
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  // After deletion, redirect to settings (or login if logged out)
+                  navigate('/settings');
+                } catch (error) {
+                  console.error('Error deleting account:', error);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              disabled={isLoading}
+            >
               <Trash2 size={16} />
-              Delete Account
+              {isLoading ? 'Deleting...' : 'Delete Account'}
             </button>
           </div>
         </div>
@@ -259,7 +275,11 @@ export default function Settings() {
           </div>
 
           <button
-            onClick={handlePasswordUpdate}
+            onClick={async () => {
+              await handlePasswordUpdate();
+              // Stay on settings after password change
+              setActiveTab('account');
+            }}
             disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
