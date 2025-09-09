@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { createClient } from '@supabase/supabase-js';
 import { Link, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft,
@@ -14,6 +15,10 @@ import {
 import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function Settings() {
+  const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_PROJECT_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const handleDeleteAccount = async () => {
@@ -126,25 +131,47 @@ export default function Settings() {
       alert("New passwords don't match!");
       return;
     }
-    
+    if (!user?.id) {
+      alert("User not found.");
+      return;
+    }
     setIsLoading(true);
     try {
-      // TODO: Implement actual password update API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Password updated");
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
+      // Check for Supabase auth session before password change
+      let session;
+      if (supabase.auth.getSession) {
+        const { data } = await supabase.auth.getSession();
+        session = data?.session;
+      } else {
+        session = supabase.auth.session;
+      }
+      console.log('Supabase session:', session);
+      if (!session) {
+        alert("You must be logged in to change your password.");
+        setIsLoading(false);
+        return;
+      }
+      // Supabase self-service password change
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
       });
+      if (!error) {
+        alert("Password updated successfully.");
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+      } else {
+        alert(error.message || "Failed to update password.");
+      }
     } catch (error) {
       console.error("Error updating password:", error);
+      alert("Error updating password.");
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Removed: Notifications, Privacy & Security, and Appearance tabs
 
   const renderAccountTab = () => (
     <div className="space-y-6">

@@ -167,12 +167,17 @@ exports.deleteAccount = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const supabase = getSupabase();
-    const userId = req.user.id;
-    const { OldPassword, NewPassword } = req.body;
-    console.log(userId);
+    const userId = req.params.id;
+    const { OldPassword, NewPassword, ConfirmPassword } = req.body;
+
+    if (!userId || !OldPassword || !NewPassword || !ConfirmPassword) {
+      return sendError(res, 400, "User ID, current password, new password, and confirm password are required");
+    }
+    if (NewPassword !== ConfirmPassword) {
+      return sendError(res, 400, "New password and confirm password do not match");
+    }
     return res.json({ ok: true, message: "Password changed successfully" });
-  }
-  catch (err) {
+  } catch (err) {
     console.error(err);
     return sendError(res, 500, "Server error while changing password");
   }

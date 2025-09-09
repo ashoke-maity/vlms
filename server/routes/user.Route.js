@@ -12,7 +12,7 @@ router.post('/register', register);
 router.delete('/delete-profile/:id', deleteAccount);
 
 // change password
-router.patch('/change-password/:id', changePassword);
+router.put('/change-password/:id', changePassword);
 
 // logout
 router.get('/logout', logout);
