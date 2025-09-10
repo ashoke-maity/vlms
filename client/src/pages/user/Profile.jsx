@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
-import { fetchTMDBVideos } from "../../libs/tmdb";
+import favoritesService from "../../services/favorites.js";
 
 
 export default function Profile() {
@@ -27,15 +27,23 @@ export default function Profile() {
   });
   const [editData, setEditData] = useState(userData);
   const [isLoading, setIsLoading] = useState(false);
-  const [videos, setVideos] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
-    fetchTMDBVideos({}).then((res) => {
-      if (isMounted) setVideos(res || []);
-    }).catch(() => {});
+    if (user?.id) {
+      setIsLoading(true);
+      favoritesService.getFavorites(user.id)
+        .then((res) => {
+          if (isMounted && res.ok) setFavorites(res.data || []);
+        })
+        .catch((err) => console.error("Error fetching favorites:", err))
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    }
     return () => { isMounted = false; };
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -157,29 +165,38 @@ export default function Profile() {
             </div>
           </div>
           
-          {/* Main Content: Watchlist */}
+          {/* Main Content: Favorites */}
             <div className="bg-neutral-900 rounded-lg p-6 border border-neutral-800">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Watchlist</h3>
-                <Link to="/watchlist" className="text-sm text-blue-400 hover:text-blue-300">View all</Link>
+                <h3 className="text-lg font-semibold">Favorites</h3>
               </div>
-              {videos && videos.length > 0 ? (
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : favorites && favorites.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {videos.slice(0, 6).map((video, index) => (
-                    <div key={video.id || index} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+                  {favorites.slice(0, 6).map((favorite, index) => (
+                    <div key={favorite.id || index} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
                       <VideoCard
-                        video={video}
-                        isFavorite={false}
+                        video={favorite}
+                        isFavorite={true}
                         isRecentlyWatched={false}
                         onSelect={() => {}}
-                        onToggleFavorite={() => {}}
+                        onToggleFavorite={() => {
+                          favoritesService.removeFromFavorites(user.id, favorite.video_id)
+                            .then(() => {
+                              setFavorites(prev => prev.filter(fav => fav.id !== favorite.id));
+                            })
+                            .catch(err => console.error("Error removing favorite:", err));
+                        }}
                         animationDelay={index * 0.1}
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-neutral-400">Your watchlist is empty.</p>
+                <p className="text-neutral-400">Your favorites list is empty.</p>
               )}
             </div>
           </div>
