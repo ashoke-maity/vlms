@@ -4,6 +4,10 @@ function sendError(res, status, message, details = null) {
   return res.status(status).json({ ok: false, message, details });
 }
 
+function sendSuccess(res, data, message = 'Success') {
+  return res.status(200).json({ ok: true, message, data });
+}
+
 // user register api
 exports.register = async (req, res) => {
   try {
@@ -194,5 +198,103 @@ exports.logout = async (req, res) => {
   catch (err) {
     console.error(err);
     return sendError(res, 500, "Server error while logging out");
+  }
+};
+
+// Add video to favorites
+exports.addToFavorites = async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const { userId, videoId } = req.body;
+
+    if (!userId || !videoId) {
+      return sendError(res, 400, "User ID and video ID are required");
+    }
+
+    // Check if already in favorites
+    const { data: existingFav } = await supabase
+      .from("Favourites")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("video_id", videoId)
+      .single();
+
+    if (existingFav) {
+      return sendSuccess(res, existingFav, "Video is already in favorites");
+    }
+
+    // Add to favorites
+    const { data, error } = await supabase
+      .from("Favourites")
+      .insert([{
+        user_id: userId,
+        video_id: videoId,
+        added_at: new Date().toISOString()
+      }])
+      .select();
+
+    if (error) {
+      return sendError(res, 500, "Failed to add to favorites", error.message);
+    }
+
+    return sendSuccess(res, data[0], "Added to favorites successfully");
+  } catch (err) {
+    console.error("Error adding to favorites:", err);
+    return sendError(res, 500, "Server error while adding to favorites");
+  }
+};
+
+// Remove video from favorites
+exports.removeFromFavorites = async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const userId = req.params.userId;
+    const videoId = req.params.videoId;
+
+    if (!userId || !videoId) {
+      return sendError(res, 400, "User ID and video ID are required");
+    }
+
+    const { error } = await supabase
+      .from("Favourites")
+      .delete()
+      .eq("user_id", userId)
+      .eq("video_id", videoId);
+
+    if (error) {
+      return sendError(res, 500, "Failed to remove from favorites", error.message);
+    }
+
+    return sendSuccess(res, null, "Removed from favorites successfully");
+  } catch (err) {
+    console.error("Error removing from favorites:", err);
+    return sendError(res, 500, "Server error while removing from favorites");
+  }
+};
+
+// Get user's favorites
+exports.getFavorites = async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return sendError(res, 400, "User ID is required");
+    }
+
+    const { data, error } = await supabase
+      .from("Favourites")
+      .select("*, video_id")
+      .eq("user_id", userId)
+      .order("added_at", { ascending: false });
+
+    if (error) {
+      return sendError(res, 500, "Failed to get favorites", error.message);
+    }
+
+    return sendSuccess(res, data, "Favorites retrieved successfully");
+  } catch (err) {
+    console.error("Error getting favorites:", err);
+    return sendError(res, 500, "Server error while getting favorites");
   }
 };

@@ -8,19 +8,23 @@ import {
 } from "lucide-react";
 import DirectVideoPlayer from "../../ui/DirectVideoPlayer";
 import videoService from "../../../services/video";
+import favoritesService from "../../../services/favorites";
+import { useAuth } from "../../../context/AuthContext.jsx";
 
 export function VideoCard({
   video,
-  isFavorite,
+  isFavorite: initialIsFavorite,
   isRecentlyWatched,
   onSelect,
   onToggleFavorite,
   animationDelay = 0,
 }) {
+  const { user } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
   // Build TMDB image URL if available
   const tmdbBase = 'https://image.tmdb.org/t/p';
@@ -133,7 +137,25 @@ export function VideoCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleFavorite();
+              if (user?.id) {
+                if (isFavorite) {
+                  favoritesService.removeFromFavorites(user.id, video.id)
+                    .then(() => {
+                      setIsFavorite(false);
+                      if (onToggleFavorite) onToggleFavorite();
+                    })
+                    .catch(err => console.error("Error removing from favorites:", err));
+                } else {
+                  favoritesService.addToFavorites(user.id, video.id)
+                    .then(() => {
+                      setIsFavorite(true);
+                      if (onToggleFavorite) onToggleFavorite();
+                    })
+                    .catch(err => console.error("Error adding to favorites:", err));
+                }
+              } else {
+                alert("Please log in to add favorites");
+              }
             }}
             className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${
               isFavorite 
