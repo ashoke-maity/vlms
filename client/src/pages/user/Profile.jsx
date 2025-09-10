@@ -12,12 +12,11 @@ import {
 import { useAuth } from "../../context/AuthContext.jsx";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import favoritesService from "../../services/favorites.js";
-
+import videoService from "../../services/video.js";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -28,20 +27,51 @@ export default function Profile() {
   const [editData, setEditData] = useState(userData);
   const [isLoading, setIsLoading] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [favoriteVideos, setFavoriteVideos] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
-    if (user?.id) {
+    const fetchFavoritesWithDetails = async () => {
+      if (!user?.id) return;
       setIsLoading(true);
-      favoritesService.getFavorites(user.id)
-        .then((res) => {
-          if (isMounted && res.ok) setFavorites(res.data || []);
-        })
-        .catch((err) => console.error("Error fetching favorites:", err))
-        .finally(() => {
-          if (isMounted) setIsLoading(false);
-        });
-    }
+      try {
+        const res = await favoritesService.getFavorites(user.id);
+        if (!isMounted) return;
+        if (res?.ok) {
+          const favs = res.data || [];
+          setFavorites(favs);
+          // Fetch video details for each favorite (TMDB ID)
+          const detailPromises = favs.slice(0, 6).map(async (fav) => {
+            try {
+              const detailRes = await videoService.getVideoForPlay(fav.video_id);
+              if (detailRes?.ok) {
+                const d = detailRes.data || {};
+                return {
+                  id: d.id,
+                  title: d.title,
+                  poster_path: d.poster_path,
+                  backdrop_path: d.backdrop_path,
+                  year: (d.release_date || '').slice(0,4),
+                  rating: d.vote_average,
+                  vote_count: d.vote_count,
+                  description: d.overview,
+                };
+              }
+            } catch (e) {
+              console.error('Error fetching video details for favorite', fav, e);
+            }
+            return null;
+          });
+          const detailed = (await Promise.all(detailPromises)).filter(Boolean);
+          setFavoriteVideos(detailed);
+        }
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    fetchFavoritesWithDetails();
     return () => { isMounted = false; };
   }, [user?.id]);
 
@@ -67,23 +97,6 @@ export default function Profile() {
     const emailInitial = (userData.email || "").toString().trim().charAt(0).toUpperCase();
     return emailInitial || "U";
   }, [userData.firstName, userData.lastName, userData.email]);
-
-  const handleEdit = () => {
-    setEditData(userData);
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setEditData(userData);
-    setIsEditing(false);
-  };
-
-  const handleInputChange = (field, value) => {
-    setEditData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
   if (!isAuthenticated) {
     return (
@@ -166,7 +179,7 @@ export default function Profile() {
           </div>
           
           {/* Main Content: Favorites */}
-            <div className="bg-neutral-900 rounded-lg p-6 border border-neutral-800">
+            <div className="lg:col-span-2 bg-neutral-900 rounded-lg p-6 border border-neutral-800">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Favorites</h3>
               </div>
@@ -174,21 +187,23 @@ export default function Profile() {
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-              ) : favorites && favorites.length > 0 ? (
+              ) : favoriteVideos && favoriteVideos.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {favorites.slice(0, 6).map((favorite, index) => (
-                    <div key={favorite.id || index} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+                  {favoriteVideos.map((video, index) => (
+                    <div key={video.id || index} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
                       <VideoCard
-                        video={favorite}
+                        video={video}
                         isFavorite={true}
                         isRecentlyWatched={false}
                         onSelect={() => {}}
-                        onToggleFavorite={() => {
-                          favoritesService.removeFromFavorites(user.id, favorite.video_id)
-                            .then(() => {
-                              setFavorites(prev => prev.filter(fav => fav.id !== favorite.id));
-                            })
-                            .catch(err => console.error("Error removing favorite:", err));
+                        onToggleFavorite={async () => {
+                          try {
+                            await favoritesService.removeFromFavorites(user.id, video.id);
+                            setFavoriteVideos(prev => prev.filter(v => v.id !== video.id));
+                            setFavorites(prev => prev.filter(fav => fav.video_id !== video.id));
+                          } catch (err) {
+                            console.error("Error removing favorite:", err);
+                          }
                         }}
                         animationDelay={index * 0.1}
                       />

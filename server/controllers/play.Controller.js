@@ -18,7 +18,7 @@ exports.getVideoDetails = async (req, res) => {
   try {
     const { id } = req.params;
     
-    console.log(`🎬 Getting video details for TMDB ID: ${id}`);
+    
     
     // Get movie details from TMDB
     const detailsResponse = await axios.get(
@@ -67,14 +67,9 @@ exports.getVideoDetails = async (req, res) => {
       }))
     };
     
-    console.log(`✅ Video details retrieved: ${movieDetails.title}`);
-    console.log(`🎞️ Found ${movieVideos.length} videos, trailer available: ${!!trailer}`);
-    
     return sendSuccess(res, videoData, 'Video details retrieved successfully');
     
   } catch (error) {
-    console.error('❌ Error getting video details:', error.message);
-    
     if (error.response?.status === 404) {
       return sendError(res, 404, 'Video not found');
     }
@@ -88,9 +83,7 @@ exports.getVideoStream = async (req, res) => {
   try {
     const { id } = req.params;
     const { quality = '720p', type = 'trailer' } = req.query;
-    
-    console.log(`🎥 Getting stream for TMDB ID: ${id}, quality: ${quality}, type: ${type}`);
-    
+        
     // Get movie videos from TMDB
     const videosResponse = await axios.get(
       `${TMDB_BASE_URL}/movie/${id}/videos?api_key=${TMDB_API_KEY}`

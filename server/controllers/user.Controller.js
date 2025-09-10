@@ -192,7 +192,6 @@ exports.logout = async (req, res) => {
   try {
     const supabase = getSupabase();
     const userId = req.user.id;
-    console.log(userId);
     return res.json({ ok: true, message: "Logout successful" });
   }
   catch (err) {

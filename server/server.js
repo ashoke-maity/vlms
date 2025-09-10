@@ -26,5 +26,5 @@ app.use('/vlms/play', playRouter);
 
 // server listen
 app.listen(process.env.PORT, ()=>{
-    console.log(`The server is running on port : ${process.env.PORT}`);
+    
 })

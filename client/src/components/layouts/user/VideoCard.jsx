@@ -25,6 +25,10 @@ export function VideoCard({
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  // Keep local state in sync if parent prop changes
+  React.useEffect(() => {
+    setIsFavorite(initialIsFavorite);
+  }, [initialIsFavorite, video?.id]);
 
   // Build TMDB image URL if available
   const tmdbBase = 'https://image.tmdb.org/t/p';
@@ -135,26 +139,26 @@ export function VideoCard({
 
           {/* Favorite Button */}
           <button
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              if (user?.id) {
-                if (isFavorite) {
-                  favoritesService.removeFromFavorites(user.id, video.id)
-                    .then(() => {
-                      setIsFavorite(false);
-                      if (onToggleFavorite) onToggleFavorite();
-                    })
-                    .catch(err => console.error("Error removing from favorites:", err));
-                } else {
-                  favoritesService.addToFavorites(user.id, video.id)
-                    .then(() => {
-                      setIsFavorite(true);
-                      if (onToggleFavorite) onToggleFavorite();
-                    })
-                    .catch(err => console.error("Error adding to favorites:", err));
-                }
-              } else {
+              if (!user?.id) {
                 alert("Please log in to add favorites");
+                return;
+              }
+              const next = !isFavorite;
+              // Optimistic UI update
+              setIsFavorite(next);
+              try {
+                if (next) {
+                  await favoritesService.addToFavorites(user.id, video.id);
+                } else {
+                  await favoritesService.removeFromFavorites(user.id, video.id);
+                }
+                if (onToggleFavorite) onToggleFavorite();
+              } catch (err) {
+                console.error("Favorite toggle failed:", err);
+                // Revert on failure
+                setIsFavorite(!next);
               }
             }}
             className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${
@@ -162,8 +166,10 @@ export function VideoCard({
                 ? "bg-red-500 text-white" 
                 : "bg-black/50 text-white hover:bg-black/70"
             }`}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <Heart className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`} />
+            {/* Use fill via attribute to avoid Tailwind purge issues */}
+            <Heart className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} />
           </button>
 
           {/* Recently Watched Indicator */}
