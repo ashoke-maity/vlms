@@ -3,8 +3,11 @@ import Header from "../../components/ui/user/Header";
 import { VideoCard } from "../../components/layouts/user/VideoCard";
 import { HeroSection } from "../../components/layouts/user/HeroSection";
 import { fetchTMDBVideos, fetchTrendingMovies, fetchTMDBGenres } from "../../libs/tmdb";
+import { useAuth } from "../../context/AuthContext.jsx";
+import favoritesService from "../../services/favorites.js";
 
 export default function Home() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [favorites, setFavorites] = useState([]);
@@ -26,6 +29,25 @@ export default function Home() {
     }
     return Array.from(map.values());
   };
+
+  // Load user's favorites
+  useEffect(() => {
+    const loadUserFavorites = async () => {
+      if (user?.id) {
+        try {
+          const res = await favoritesService.getFavorites(user.id);
+          if (res.ok && Array.isArray(res.data)) {
+            const favoriteVideoIds = res.data.map(fav => fav.video_id || fav.id);
+            setFavorites(favoriteVideoIds);
+          }
+        } catch (error) {
+          console.error('Error loading user favorites:', error);
+        }
+      }
+    };
+
+    loadUserFavorites();
+  }, [user?.id]);
 
   // Load initial data
   useEffect(() => {

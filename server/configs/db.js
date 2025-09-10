@@ -8,7 +8,7 @@ exports.dbConnect = async () => {
     process.env.SUPABASE_PROJECT_URL,
     process.env.SUPABASE_SERVICE_ROLE
   );
-  console.log("Connected to DB successfully !");
+  
   return supabase;
 };
 
